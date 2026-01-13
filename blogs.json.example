@@ -1,0 +1,18 @@
+{
+  "blogs": [
+    {
+      "id": "example-blog",
+      "name": "Example Blog",
+      "url": "https://yourblog.com",
+      "username": "your_wp_username",
+      "appPassword": "your wordpress app password here",
+      "description": "Brief description of your blog",
+      "categories": ["Category 1", "Category 2"],
+      "brandVoice": {
+        "tone": "friendly-professional",
+        "keywords": ["keyword1", "keyword2"],
+        "cta": "Your call to action"
+      }
+    }
+  ]
+}

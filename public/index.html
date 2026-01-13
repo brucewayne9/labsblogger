@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Manager - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <h1>🔐 Blog Manager</h1>
+            <p>Multi-blog content management system</p>
+            <form id="loginForm">
+                <input type="password" id="passwordInput" placeholder="Enter password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div id="loginError" class="error"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardScreen" class="screen hidden">
+        <nav class="navbar">
+            <h1>📝 Blog Manager</h1>
+            <div class="nav-buttons">
+                <button onclick="location.href='admin.html'" class="btn-secondary">⚙️ Manage Blogs</button>
+                <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="welcome">
+                <h2>Select a Blog to Write For</h2>
+                <p>Choose from your configured blogs below</p>
+            </div>
+
+            <div id="blogsList" class="blogs-grid">
+                <!-- Blogs will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on load
+        async function checkAuth() {
+            const response = await fetch('/api/auth-status');
+            const data = await response.json();
+
+            if (data.authenticated) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('dashboardScreen').classList.remove('hidden');
+                loadBlogs();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('dashboardScreen').classList.add('hidden');
+            }
+        }
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+
+            if (response.ok) {
+                checkAuth();
+            } else {
+                document.getElementById('loginError').textContent = 'Invalid password';
+            }
+        });
+
+        // Logout
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.reload();
+        }
+
+        // Load blogs
+        async function loadBlogs() {
+            const response = await fetch('/api/blogs');
+            const blogs = await response.json();
+
+            const blogsList = document.getElementById('blogsList');
+            blogsList.innerHTML = '';
+
+            blogs.forEach(blog => {
+                const card = document.createElement('div');
+                card.className = 'blog-card';
+                card.innerHTML = `
+                    <h3>${blog.name}</h3>
+                    <p class="blog-url">${blog.url}</p>
+                    <p class="blog-description">${blog.description}</p>
+                    <div class="blog-categories">
+                        ${blog.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                    </div>
+                    <button onclick="selectBlog('${blog.id}')" class="btn-primary">Create Blog Post</button>
+                `;
+                blogsList.appendChild(card);
+            });
+        }
+
+        // Select blog and go to creation page
+        function selectBlog(blogId) {
+            sessionStorage.setItem('selectedBlogId', blogId);
+            location.href = 'create.html';
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

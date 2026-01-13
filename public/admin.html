@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Blogs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>⚙️ Manage Blogs</h1>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="admin-header">
+            <h2>Your Blogs</h2>
+            <button onclick="showAddBlogForm()" class="btn-primary">+ Add New Blog</button>
+        </div>
+
+        <!-- Add/Edit Blog Form -->
+        <div id="blogForm" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="formTitle">Add New Blog</h3>
+                    <button onclick="closeForm()" class="close-btn">×</button>
+                </div>
+
+                <form id="addEditBlogForm">
+                    <input type="hidden" id="editBlogId">
+
+                    <div class="form-group">
+                        <label>Blog Name*</label>
+                        <input type="text" id="blogName" required placeholder="e.g., My Awesome Blog">
+                    </div>
+
+                    <div class="form-group">
+                        <label>WordPress URL*</label>
+                        <input type="url" id="blogUrl" required placeholder="https://yourblog.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>WordPress Username*</label>
+                        <input type="text" id="blogUsername" required placeholder="admin">
+                    </div>
+
+                    <div class="form-group">
+                        <label>WordPress Application Password*</label>
+                        <input type="text" id="blogPassword" required placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
+                        <small>Create this in WordPress: Users → Profile → Application Passwords</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="blogDescription" rows="3" placeholder="Brief description of your blog"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categories (comma-separated)</label>
+                        <input type="text" id="blogCategories" placeholder="Tech, Business, Marketing">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tone</label>
+                        <select id="blogTone">
+                            <option value="friendly-professional">Friendly & Professional</option>
+                            <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
+                            <option value="professional-authoritative">Professional & Authoritative</option>
+                            <option value="educational-detailed">Educational & Detailed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Keywords (comma-separated)</label>
+                        <input type="text" id="blogKeywords" placeholder="SEO, marketing, growth">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Call-to-Action</label>
+                        <input type="text" id="blogCTA" placeholder="Subscribe to our newsletter">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" onclick="closeForm()" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Blog</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Blogs List -->
+        <div id="blogsList" class="admin-blogs-list">
+            <!-- Blogs will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        let editingBlogId = null;
+
+        async function init() {
+            const authResponse = await fetch('/api/auth-status');
+            const authData = await authResponse.json();
+
+            if (!authData.authenticated) {
+                location.href = 'index.html';
+                return;
+            }
+
+            loadBlogs();
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        async function loadBlogs() {
+            const response = await fetch('/api/blogs');
+            const blogs = await response.json();
+
+            // Get full blog data including passwords
+            const fullBlogsResponse = await Promise.all(
+                blogs.map(blog => fetch(`/api/blogs/${blog.id}`).then(r => r.json()))
+            );
+
+            const blogsList = document.getElementById('blogsList');
+            blogsList.innerHTML = '';
+
+            fullBlogsResponse.forEach(blog => {
+                const card = document.createElement('div');
+                card.className = 'admin-blog-card';
+                card.innerHTML = `
+                    <div class="admin-blog-header">
+                        <h3>${blog.name}</h3>
+                        <div class="admin-blog-actions">
+                            <button onclick="editBlog('${blog.id}')" class="btn-edit">✏️ Edit</button>
+                            <button onclick="deleteBlog('${blog.id}')" class="btn-delete">🗑️ Delete</button>
+                        </div>
+                    </div>
+                    <p class="blog-url">${blog.url}</p>
+                    <p>${blog.description || 'No description'}</p>
+                    <div class="blog-details">
+                        <p><strong>Username:</strong> ${blog.username}</p>
+                        <p><strong>Categories:</strong> ${blog.categories?.join(', ') || 'None'}</p>
+                        <p><strong>Tone:</strong> ${blog.brandVoice?.tone || 'N/A'}</p>
+                    </div>
+                `;
+                blogsList.appendChild(card);
+            });
+        }
+
+        function showAddBlogForm() {
+            editingBlogId = null;
+            document.getElementById('formTitle').textContent = 'Add New Blog';
+            document.getElementById('addEditBlogForm').reset();
+            document.getElementById('editBlogId').value = '';
+            document.getElementById('blogForm').classList.remove('hidden');
+        }
+
+        async function editBlog(blogId) {
+            const response = await fetch(`/api/blogs/${blogId}`);
+            const blog = await response.json();
+
+            editingBlogId = blogId;
+            document.getElementById('formTitle').textContent = 'Edit Blog';
+            document.getElementById('editBlogId').value = blogId;
+            document.getElementById('blogName').value = blog.name;
+            document.getElementById('blogUrl').value = blog.url;
+            document.getElementById('blogUsername').value = blog.username;
+            document.getElementById('blogPassword').value = blog.appPassword;
+            document.getElementById('blogDescription').value = blog.description || '';
+            document.getElementById('blogCategories').value = blog.categories?.join(', ') || '';
+            document.getElementById('blogTone').value = blog.brandVoice?.tone || 'friendly-professional';
+            document.getElementById('blogKeywords').value = blog.brandVoice?.keywords?.join(', ') || '';
+            document.getElementById('blogCTA').value = blog.brandVoice?.cta || '';
+
+            document.getElementById('blogForm').classList.remove('hidden');
+        }
+
+        async function deleteBlog(blogId) {
+            if (!confirm('Are you sure you want to delete this blog?')) {
+                return;
+            }
+
+            await fetch(`/api/blogs/${blogId}`, { method: 'DELETE' });
+            loadBlogs();
+        }
+
+        function closeForm() {
+            document.getElementById('blogForm').classList.add('hidden');
+            document.getElementById('addEditBlogForm').reset();
+            editingBlogId = null;
+        }
+
+        document.getElementById('addEditBlogForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const blogData = {
+                name: document.getElementById('blogName').value,
+                url: document.getElementById('blogUrl').value,
+                username: document.getElementById('blogUsername').value,
+                appPassword: document.getElementById('blogPassword').value,
+                description: document.getElementById('blogDescription').value,
+                categories: document.getElementById('blogCategories').value.split(',').map(c => c.trim()).filter(c => c),
+                tone: document.getElementById('blogTone').value,
+                keywords: document.getElementById('blogKeywords').value.split(',').map(k => k.trim()).filter(k => k),
+                cta: document.getElementById('blogCTA').value
+            };
+
+            const blogId = document.getElementById('editBlogId').value;
+
+            if (blogId) {
+                // Update existing blog
+                await fetch(`/api/blogs/${blogId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(blogData)
+                });
+            } else {
+                // Add new blog
+                await fetch('/api/blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(blogData)
+                });
+            }
+
+            closeForm();
+            loadBlogs();
+        });
+
+        init();
+    </script>
+</body>
+</html>

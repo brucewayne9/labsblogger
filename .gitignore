@@ -1,0 +1,30 @@
+# Environment variables
+.env
+
+# Blog configurations (contains passwords)
+blogs.json
+
+# Node modules
+node_modules/
+
+# Output files
+output/
+temp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Session store
+sessions/

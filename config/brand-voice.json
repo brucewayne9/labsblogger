@@ -1,0 +1,24 @@
+{
+  "tone": "friendly-professional",
+  "values": [
+    "Providing helpful content",
+    "Clear and actionable advice",
+    "Professional quality",
+    "Reader-focused"
+  ],
+  "avoid": [
+    "Overly technical jargon",
+    "Corporate speak",
+    "Unrealistic promises"
+  ],
+  "keywords": [
+    "helpful",
+    "practical",
+    "actionable"
+  ],
+  "cta_options": [
+    "Learn more",
+    "Get started today",
+    "Try it free"
+  ]
+}

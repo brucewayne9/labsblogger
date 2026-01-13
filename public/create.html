@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Blog Post</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>✍️ Create Blog Post</h1>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">1. Brainstorm</div>
+            <div class="progress-step" data-step="2">2. Outline</div>
+            <div class="progress-step" data-step="3">3. Article</div>
+            <div class="progress-step" data-step="4">4. Images</div>
+            <div class="progress-step" data-step="5">5. Publish</div>
+        </div>
+
+        <!-- Step 1: Brainstorming -->
+        <div id="step1" class="step active">
+            <h2>Brainstorm Your Blog Post</h2>
+            <div id="blogInfo" class="info-box"></div>
+
+            <div class="form-group">
+                <label>Topic</label>
+                <input type="text" id="topic" placeholder="e.g., Ways to monetize your radio station">
+            </div>
+
+            <div class="form-group">
+                <label>Angle</label>
+                <select id="angle">
+                    <option value="how-to-guide">How-to Guide</option>
+                    <option value="listicle">Listicle</option>
+                    <option value="case-study">Case Study</option>
+                    <option value="problem-solution">Problem/Solution</option>
+                    <option value="industry-trends">Industry Trends</option>
+                    <option value="feature-tutorial">Feature Tutorial</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Target Audience</label>
+                <input type="text" id="audience" placeholder="e.g., Radio station owners">
+            </div>
+
+            <div class="form-group">
+                <label>Tone</label>
+                <select id="tone">
+                    <option value="friendly-conversational">Friendly & Conversational</option>
+                    <option value="professional-authoritative">Professional & Authoritative</option>
+                    <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
+                    <option value="educational-detailed">Educational & Detailed</option>
+                </select>
+            </div>
+
+            <div id="clarificationQuestions"></div>
+
+            <button onclick="generateOutline()" class="btn-primary">Generate Outline →</button>
+        </div>
+
+        <!-- Step 2: Outline Review -->
+        <div id="step2" class="step">
+            <h2>Review Article Outline</h2>
+            <div id="outlineDisplay"></div>
+            <div class="button-group">
+                <button onclick="goToStep(1)" class="btn-secondary">← Back</button>
+                <button onclick="generateArticle()" class="btn-primary">Generate Article →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Article Review -->
+        <div id="step3" class="step">
+            <h2>Article Generated</h2>
+            <div id="articleDisplay"></div>
+            <div class="button-group">
+                <button onclick="goToStep(2)" class="btn-secondary">← Back</button>
+                <button onclick="selectImagesStep()" class="btn-primary">Select Images →</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Image Selection -->
+        <div id="step4" class="step">
+            <h2>Selecting Images...</h2>
+            <div id="imagesDisplay">
+                <div class="loader">Finding perfect images for your article...</div>
+            </div>
+            <div class="button-group hidden" id="imagesButtons">
+                <button onclick="goToStep(3)" class="btn-secondary">← Back</button>
+                <button onclick="goToPublish()" class="btn-primary">Publish to WordPress →</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Publishing -->
+        <div id="step5" class="step">
+            <h2>Publishing to WordPress</h2>
+            <div id="publishDisplay">
+                <div class="loader">Creating draft on WordPress...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let blogId = sessionStorage.getItem('selectedBlogId');
+        let currentBlog = null;
+        let brief = {};
+        let outline = null;
+        let article = null;
+        let images = null;
+        let currentStep = 1;
+
+        // Check auth and load blog info
+        async function init() {
+            const authResponse = await fetch('/api/auth-status');
+            const authData = await authResponse.json();
+
+            if (!authData.authenticated) {
+                location.href = 'index.html';
+                return;
+            }
+
+            if (!blogId) {
+                location.href = 'index.html';
+                return;
+            }
+
+            const blogResponse = await fetch(`/api/blogs/${blogId}`);
+            currentBlog = await blogResponse.json();
+
+            document.getElementById('blogInfo').innerHTML = `
+                <h3>${currentBlog.name}</h3>
+                <p>${currentBlog.description}</p>
+                <p class="blog-url">${currentBlog.url}</p>
+            `;
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
+            currentStep = step;
+        }
+
+        async function generateOutline() {
+            brief = {
+                topic: document.getElementById('topic').value,
+                angle: document.getElementById('angle').value,
+                audience: document.getElementById('audience').value,
+                tone: document.getElementById('tone').value,
+                keyPoints: []
+            };
+
+            goToStep(2);
+            document.getElementById('outlineDisplay').innerHTML = '<div class="loader">Generating outline...</div>';
+
+            const response = await fetch('/api/outline', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogId, brief })
+            });
+
+            const data = await response.json();
+            outline = data.outline;
+
+            displayOutline();
+        }
+
+        function displayOutline() {
+            const display = document.getElementById('outlineDisplay');
+            display.innerHTML = `
+                <div class="outline-box">
+                    <h3>📌 ${outline.headline}</h3>
+                    <p><strong>Introduction:</strong> ${outline.introHook}</p>
+                    <h4>Sections:</h4>
+                    <ol>
+                        ${outline.sections.map(s => `
+                            <li>
+                                <strong>${s.heading}</strong>
+                                <ul>
+                                    ${s.points.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </li>
+                        `).join('')}
+                    </ol>
+                    <p><strong>CTA:</strong> ${outline.cta}</p>
+                </div>
+            `;
+        }
+
+        async function generateArticle() {
+            goToStep(3);
+            document.getElementById('articleDisplay').innerHTML = '<div class="loader">Writing article...</div>';
+
+            const response = await fetch('/api/article', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogId, outline, brief })
+            });
+
+            const data = await response.json();
+            article = data.article;
+
+            document.getElementById('articleDisplay').innerHTML = `
+                <div class="article-box">
+                    <h3>${article.title}</h3>
+                    <p class="meta">Word Count: ~${countWords(article.content)} words</p>
+                    <p class="meta">Images: ${article.imagePlacements?.length || 0}</p>
+                    <div class="article-preview">${article.content.substring(0, 500)}...</div>
+                </div>
+            `;
+        }
+
+        async function selectImagesStep() {
+            goToStep(4);
+
+            const response = await fetch('/api/images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ article, brief })
+            });
+
+            const data = await response.json();
+            images = data.images;
+
+            document.getElementById('imagesDisplay').innerHTML = `
+                <div class="images-grid">
+                    ${images.allImages.map(img => `
+                        <div class="image-card">
+                            <img src="${img.url}" alt="${img.altText}">
+                            <p>${img.position}</p>
+                            <p class="image-credit">${img.credit}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('imagesButtons').classList.remove('hidden');
+        }
+
+        async function goToPublish() {
+            goToStep(5);
+
+            const response = await fetch('/api/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogId, article, images })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('publishDisplay').innerHTML = `
+                    <div class="success-box">
+                        <h3>✅ Draft Created Successfully!</h3>
+                        <p>Post ID: ${data.postId}</p>
+                        <p><a href="${data.editUrl}" target="_blank">Edit in WordPress →</a></p>
+                        <button onclick="location.href='index.html'" class="btn-primary">Create Another Post</button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('publishDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Publishing Failed</h3>
+                        <p>${data.error}</p>
+                        <button onclick="goToStep(4)" class="btn-secondary">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function countWords(html) {
+            const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            return text.split(' ').length;
+        }
+
+        init();
+    </script>
+</body>
+</html>
