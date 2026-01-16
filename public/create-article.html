@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article - The Blogger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Create Blog Post</h1>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-step" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step active" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+        </div>
+
+        <h2>Article Generated</h2>
+        <p class="step-subtitle">Your AI-written article is ready for review</p>
+
+        <div id="articleDisplay">
+            <div class="loader">Writing article...</div>
+        </div>
+
+        <div class="button-group" id="articleButtons" style="display: none;">
+            <button onclick="location.href='create-outline.html'" class="btn-secondary">← Back</button>
+            <button onclick="location.href='create-images.html'" class="btn-primary">Select Images →</button>
+        </div>
+    </div>
+
+    <script>
+        let blogId = sessionStorage.getItem('selectedBlogId');
+        let brief = JSON.parse(sessionStorage.getItem('brief') || '{}');
+        let outline = JSON.parse(sessionStorage.getItem('outline') || '{}');
+        let article = null;
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        async function init() {
+            if (!blogId || !outline.headline) {
+                location.href = 'create-brainstorm.html';
+                return;
+            }
+
+            await generateArticle();
+        }
+
+        async function generateArticle() {
+            const response = await fetch('/api/article', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogId, outline, brief })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('articleDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error generating article</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = await response.json();
+            article = data.article;
+
+            if (!article) {
+                document.getElementById('articleDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No article received</h3>
+                        <p>The server didn't return an article. Please try again.</p>
+                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Save article
+            sessionStorage.setItem('article', JSON.stringify(article));
+
+            // Display article preview
+            const wordCount = countWords(article.content);
+            document.getElementById('articleDisplay').innerHTML = `
+                <div class="article-box">
+                    <h3>${article.title}</h3>
+                    <p class="meta">Word Count: ~${wordCount} words</p>
+                    <p class="meta">Images: ${article.imagePlacements?.length || 0}</p>
+                    <div class="article-preview">${article.content.substring(0, 500)}...</div>
+                </div>
+            `;
+
+            document.getElementById('articleButtons').style.display = 'flex';
+        }
+
+        function countWords(html) {
+            const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            return text.split(' ').length;
+        }
+
+        init();
+    </script>
+</body>
+</html>

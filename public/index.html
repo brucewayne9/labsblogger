@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Manager - Dashboard</title>
+    <title>The Blogger - Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
 </head>
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="screen">
         <div class="login-container">
-            <h1>🔐 Blog Manager</h1>
-            <p>Multi-blog content management system</p>
+            <img src="logo.png" alt="The Blogger" class="logo">
+            <p class="tagline">AI Writing Assistant for Blogs</p>
             <form id="loginForm">
-                <input type="password" id="passwordInput" placeholder="Enter password" required>
+                <input type="text" id="usernameInput" placeholder="Username" required autocomplete="username">
+                <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password">
                 <button type="submit">Login</button>
             </form>
             <div id="loginError" class="error"></div>
@@ -23,17 +25,23 @@
     <!-- Dashboard -->
     <div id="dashboardScreen" class="screen hidden">
         <nav class="navbar">
-            <h1>📝 Blog Manager</h1>
+            <div class="navbar-brand">
+                <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            </div>
+            <div class="user-info">
+                <span id="userDisplay"></span>
+            </div>
             <div class="nav-buttons">
-                <button onclick="location.href='admin.html'" class="btn-secondary">⚙️ Manage Blogs</button>
+                <button id="manageBlogsBtn" onclick="location.href='admin.html'" class="btn-secondary hidden">⚙️ Manage Blogs</button>
+                <button id="manageUsersBtn" onclick="location.href='users.html'" class="btn-secondary hidden">👥 Manage Users</button>
                 <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
             </div>
         </nav>
 
         <div class="container">
             <div class="welcome">
-                <h2>Select a Blog to Write For</h2>
-                <p>Choose from your configured blogs below</p>
+                <h2>Welcome <span class="user-name" id="welcomeUsername"></span></h2>
+                <p>Enjoy the writing session</p>
             </div>
 
             <div id="blogsList" class="blogs-grid">
@@ -43,14 +51,34 @@
     </div>
 
     <script>
+        let currentUser = null;
+
         // Check authentication on load
         async function checkAuth() {
             const response = await fetch('/api/auth-status');
             const data = await response.json();
 
             if (data.authenticated) {
+                currentUser = data.user;
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('dashboardScreen').classList.remove('hidden');
+
+                // Display user info
+                document.getElementById('userDisplay').textContent = `${data.user.username} (${data.user.role})`;
+                document.getElementById('welcomeUsername').textContent = data.user.username;
+
+                // Show/hide buttons based on role
+                const canManageResponse = await fetch('/api/can-manage-blogs');
+                const canManageData = await canManageResponse.json();
+
+                if (canManageData.canManage) {
+                    document.getElementById('manageBlogsBtn').classList.remove('hidden');
+                }
+
+                if (data.user.role === 'super_admin') {
+                    document.getElementById('manageUsersBtn').classList.remove('hidden');
+                }
+
                 loadBlogs();
             } else {
                 document.getElementById('loginScreen').classList.remove('hidden');
@@ -61,18 +89,20 @@
         // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const username = document.getElementById('usernameInput').value;
             const password = document.getElementById('passwordInput').value;
 
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
+                body: JSON.stringify({ username, password })
             });
 
             if (response.ok) {
                 checkAuth();
             } else {
-                document.getElementById('loginError').textContent = 'Invalid password';
+                const error = await response.json();
+                document.getElementById('loginError').textContent = error.error || 'Invalid username or password';
             }
         });
 
@@ -109,7 +139,12 @@
         // Select blog and go to creation page
         function selectBlog(blogId) {
             sessionStorage.setItem('selectedBlogId', blogId);
-            location.href = 'create.html';
+            // Clear any previous session data
+            sessionStorage.removeItem('brief');
+            sessionStorage.removeItem('outline');
+            sessionStorage.removeItem('article');
+            sessionStorage.removeItem('images');
+            location.href = 'create-brainstorm.html';
         }
 
         // Initialize

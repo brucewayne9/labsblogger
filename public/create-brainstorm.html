@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainstorm - The Blogger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Create Blog Post</h1>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+        </div>
+
+        <h2>Brainstorm Your Blog Post</h2>
+        <p class="step-subtitle">Tell us what you want to write about and we'll help you create it</p>
+
+        <div id="blogInfo" class="info-box"></div>
+
+        <form id="brainstormForm">
+            <div class="form-group">
+                <label>Topic</label>
+                <input type="text" id="topic" required placeholder="e.g., Ways to monetize your radio station">
+            </div>
+
+            <div class="form-group">
+                <label>Angle</label>
+                <select id="angle" required>
+                    <option value="how-to-guide">How-to Guide</option>
+                    <option value="listicle">Listicle</option>
+                    <option value="case-study">Case Study</option>
+                    <option value="problem-solution">Problem/Solution</option>
+                    <option value="industry-trends">Industry Trends</option>
+                    <option value="feature-tutorial">Feature Tutorial</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Target Audience</label>
+                <input type="text" id="audience" required placeholder="e.g., Radio station owners">
+            </div>
+
+            <div class="form-group">
+                <label>Tone</label>
+                <select id="tone" required>
+                    <option value="friendly-conversational">Friendly & Conversational</option>
+                    <option value="professional-authoritative">Professional & Authoritative</option>
+                    <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
+                    <option value="educational-detailed">Educational & Detailed</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-primary">Generate Outline →</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let blogId = sessionStorage.getItem('selectedBlogId');
+        let currentBlog = null;
+
+        async function init() {
+            const authResponse = await fetch('/api/auth-status');
+            const authData = await authResponse.json();
+
+            if (!authData.authenticated) {
+                location.href = 'index.html';
+                return;
+            }
+
+            if (!blogId) {
+                location.href = 'index.html';
+                return;
+            }
+
+            const blogResponse = await fetch(`/api/blogs/${blogId}`);
+            currentBlog = await blogResponse.json();
+
+            document.getElementById('blogInfo').innerHTML = `
+                <h3>${currentBlog.name}</h3>
+                <p>${currentBlog.description}</p>
+                <p class="blog-url">${currentBlog.url}</p>
+            `;
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        document.getElementById('brainstormForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const brief = {
+                topic: document.getElementById('topic').value,
+                angle: document.getElementById('angle').value,
+                audience: document.getElementById('audience').value,
+                tone: document.getElementById('tone').value,
+                keyPoints: []
+            };
+
+            // Save brief to sessionStorage
+            sessionStorage.setItem('brief', JSON.stringify(brief));
+
+            // Go to outline page
+            location.href = 'create-outline.html';
+        });
+
+        init();
+    </script>
+</body>
+</html>

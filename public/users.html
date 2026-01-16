@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - The Blogger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Manage Users</h1>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <button onclick="showAddUserForm()" class="btn-primary">+ Add New User</button>
+
+        <div id="usersList" class="admin-list">
+            <!-- Users will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add User</h2>
+            <form id="userForm">
+                <label>Username:</label>
+                <input type="text" id="username" required>
+
+                <label>Password:</label>
+                <input type="password" id="password" required>
+
+                <label>Role:</label>
+                <select id="role">
+                    <option value="user">User (Access assigned blogs only)</option>
+                    <option value="admin">Admin (Manage all blogs)</option>
+                </select>
+
+                <label>Assigned Blogs:</label>
+                <div id="blogCheckboxes"></div>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Save</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let users = [];
+        let blogs = [];
+        let editingUserId = null;
+
+        async function checkAuth() {
+            const response = await fetch('/api/auth-status');
+            const data = await response.json();
+
+            if (!data.authenticated || data.user.role !== 'super_admin') {
+                alert('Access denied. Super admin only.');
+                location.href = 'index.html';
+                return;
+            }
+
+            loadUsers();
+            loadBlogs();
+        }
+
+        async function loadUsers() {
+            const response = await fetch('/api/users');
+            users = await response.json();
+
+            const list = document.getElementById('usersList');
+            list.innerHTML = '';
+
+            users.forEach(user => {
+                const blogsText = user.assignedBlogs && user.assignedBlogs.length > 0 ? user.assignedBlogs.join(', ') : 'None';
+                const card = document.createElement('div');
+                card.className = 'admin-card';
+                const isSuperAdmin = user.role === 'super_admin';
+
+                card.innerHTML = '<div class="admin-card-header"><h3>' + user.username + '</h3><span class="role-badge">' + user.role + '</span></div><div class="admin-card-body"><p><strong>Assigned Blogs:</strong> ' + blogsText + '</p><p class="admin-card-meta">Created: ' + new Date(user.createdAt).toLocaleDateString() + '</p></div><div class="admin-card-actions">' + (isSuperAdmin ? '<span class="text-muted">Super Admin (Cannot edit/delete)</span>' : '<button onclick="editUser(\'' + user.id + '\')" class="btn-secondary">✏️ Edit</button><button onclick="deleteUser(\'' + user.id + '\')" class="btn-danger">🗑️ Delete</button>') + '</div>';
+
+                list.appendChild(card);
+            });
+        }
+
+        async function loadBlogs() {
+            const response = await fetch('/api/blogs');
+            blogs = await response.json();
+        }
+
+        function showAddUserForm() {
+            editingUserId = null;
+            document.getElementById('modalTitle').textContent = 'Add User';
+            document.getElementById('userForm').reset();
+            renderBlogCheckboxes([]);
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('userModal').classList.add('hidden');
+        }
+
+        function renderBlogCheckboxes(assignedBlogs) {
+            const container = document.getElementById('blogCheckboxes');
+            container.innerHTML = '';
+
+            blogs.forEach(blog => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-label';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'assignedBlogs';
+                checkbox.value = blog.id;
+                checkbox.checked = assignedBlogs.includes(blog.id);
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(' ' + blog.name));
+                container.appendChild(label);
+            });
+        }
+
+        async function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            editingUserId = userId;
+            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('username').value = user.username;
+            document.getElementById('password').value = user.password;
+            document.getElementById('role').value = user.role;
+            renderBlogCheckboxes(user.assignedBlogs || []);
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+
+            const response = await fetch('/api/users/' + userId, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                loadUsers();
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Failed to delete user');
+            }
+        }
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const checkboxes = document.querySelectorAll('input[name="assignedBlogs"]:checked');
+            const assignedBlogs = Array.from(checkboxes).map(cb => cb.value);
+
+            const userData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value,
+                assignedBlogs: assignedBlogs
+            };
+
+            const url = editingUserId ? '/api/users/' + editingUserId : '/api/users';
+            const method = editingUserId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            if (response.ok) {
+                closeModal();
+                loadUsers();
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Failed to save user');
+            }
+        });
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

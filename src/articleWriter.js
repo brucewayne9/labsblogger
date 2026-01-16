@@ -131,6 +131,37 @@ export async function generateArticle(outline, brief) {
   // Extract image placements from content if not already provided
   if (!article.imagePlacements || article.imagePlacements.length === 0) {
     article.imagePlacements = extractImagePlacementsFromContent(article.content);
+  } else {
+    // If AI provided imagePlacements but without placeholders, we need to insert markers
+    // Find H2 tags to insert image markers after them
+    const h2Regex = /<h2[^>]*>.*?<\/h2>/gi;
+    const h2Matches = article.content.match(h2Regex) || [];
+
+    let inlineImageIndex = 0;
+    for (let i = 0; i < article.imagePlacements.length; i++) {
+      const placement = article.imagePlacements[i];
+
+      // Skip featured image (no placeholder needed in content)
+      if (placement.position === 'featured') {
+        placement.placeholder = null;
+        continue;
+      }
+
+      // Create placeholder for inline images
+      if (!placement.placeholder && inlineImageIndex < h2Matches.length) {
+        const placeholder = `[IMAGE: ${placement.searchQuery || placement.altText}]`;
+        const h2Tag = h2Matches[inlineImageIndex];
+
+        // Insert placeholder after the H2 tag
+        article.content = article.content.replace(
+          h2Tag,
+          `${h2Tag}\n${placeholder}\n`
+        );
+
+        placement.placeholder = placeholder;
+        inlineImageIndex++;
+      }
+    }
   }
 
   // Ensure minimum 4 images (1 featured + 3 inline)
@@ -247,6 +278,8 @@ export async function generateArticle(outline, brief) {
   console.log(chalk.cyan('\nContent Preview (first 400 chars):'));
   const preview = stripHtml(article.content).substring(0, 400);
   console.log(chalk.white(preview + '...\n'));
+
+  console.log(chalk.gray('[ArticleWriter] Debug: Final article.imagePlacements:', JSON.stringify(article.imagePlacements, null, 2)));
 
   return article;
 }

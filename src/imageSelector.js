@@ -4,14 +4,67 @@ import { searchPhotos, triggerDownload } from './utils/unsplash.js';
 import { callClaude } from './utils/anthropic.js';
 import { IMAGE_SELECTION_PROMPT } from './utils/prompts.js';
 
-// Select images for article
-export async function selectImages(article, brief) {
+// Get featured image candidates for user selection
+export async function getFeaturedImageCandidates(article, brief) {
+  console.log(chalk.cyan('\n🖼️  Finding featured image candidates...\n'));
+
+  const featuredPlacement = article.imagePlacements.find(p => p.position === 'featured');
+
+  if (!featuredPlacement) {
+    return { success: false, error: 'No featured image placement found' };
+  }
+
+  console.log(chalk.white(`  Query: "${featuredPlacement.searchQuery}"`));
+
+  const spinner = ora('Searching Unsplash...').start();
+
+  const searchResult = await searchPhotos(featuredPlacement.searchQuery, {
+    perPage: 6,
+    orientation: 'landscape',
+  });
+
+  spinner.stop();
+
+  if (!searchResult.success) {
+    return { success: false, error: searchResult.error };
+  }
+
+  if (searchResult.results.length === 0) {
+    return { success: false, error: 'No images found' };
+  }
+
+  const candidates = searchResult.results.map(photo => ({
+    id: photo.id,
+    url: photo.urls.regular,
+    thumbUrl: photo.urls.small,
+    altText: featuredPlacement.altText || photo.alt_description || photo.description,
+    description: photo.description || photo.alt_description || 'No description',
+    credit: `Photo by ${photo.user.name} on Unsplash`,
+    creditLink: photo.user.links.html,
+    photographerName: photo.user.name,
+    downloadLocation: photo.links.download_location,
+  }));
+
+  console.log(chalk.green(`\n✓ Found ${candidates.length} featured image candidates\n`));
+
+  return {
+    success: true,
+    candidates,
+    placement: featuredPlacement,
+  };
+}
+
+// Select images for article (with user-selected featured image)
+export async function selectImages(article, brief, selectedFeaturedId = null) {
   console.log(chalk.cyan('\n🖼️  Finding images for your article...\n'));
+  console.log(chalk.gray('[ImageSelector] Debug: article.imagePlacements:', JSON.stringify(article.imagePlacements, null, 2)));
 
   const selectedImages = [];
+  const usedImageIds = new Set(); // Track used image IDs to prevent duplicates
 
   for (let i = 0; i < article.imagePlacements.length; i++) {
     const placement = article.imagePlacements[i];
+    console.log(chalk.gray(`[ImageSelector] Debug: Processing placement ${i}:`, JSON.stringify(placement, null, 2)));
 
     console.log(chalk.yellow(`\nSearching for image ${i + 1}/${article.imagePlacements.length}:`));
     console.log(chalk.white(`  Query: "${placement.searchQuery}"`));
@@ -36,27 +89,63 @@ export async function selectImages(article, brief) {
       continue;
     }
 
-    spinner.text = 'Analyzing images with AI...';
+    let selectedPhoto;
+    let selectionResult = { imageIndex: 0 };
 
-    // Get context around the image placement
-    const context = getContextAroundPlacement(article.content, placement);
-
-    // Use Claude to select the best image
-    const selectionResult = await selectBestImage(
-      searchResult.results,
-      context,
-      brief.topic
-    );
-
-    spinner.stop();
-
-    if (!selectionResult.success) {
-      console.log(chalk.yellow(`  ${selectionResult.error}`));
-      console.log(chalk.yellow('  Using first search result as fallback...'));
-      selectionResult.imageIndex = 0;
+    // If this is the featured image and user has selected one, use it
+    if (placement.position === 'featured' && selectedFeaturedId) {
+      selectedPhoto = searchResult.results.find(photo => photo.id === selectedFeaturedId);
+      if (selectedPhoto) {
+        spinner.succeed(chalk.green('Using your selected featured image'));
+        // Find the index of the selected photo
+        selectionResult.imageIndex = searchResult.results.findIndex(photo => photo.id === selectedFeaturedId);
+      } else {
+        spinner.text = 'Analyzing images with AI...';
+      }
     }
 
-    const selectedPhoto = searchResult.results[selectionResult.imageIndex];
+    // If not featured or not found, use AI selection
+    if (!selectedPhoto) {
+      spinner.text = 'Analyzing images with AI...';
+
+      // Get context around the image placement
+      const context = getContextAroundPlacement(article.content, placement);
+
+      // Use Claude to select the best image
+      selectionResult = await selectBestImage(
+        searchResult.results,
+        context,
+        brief.topic
+      );
+
+      spinner.stop();
+
+      if (!selectionResult.success) {
+        console.log(chalk.yellow(`  ${selectionResult.error}`));
+        console.log(chalk.yellow('  Using first search result as fallback...'));
+        selectionResult.imageIndex = 0;
+      }
+
+      selectedPhoto = searchResult.results[selectionResult.imageIndex];
+    }
+
+    // Check for duplicates and pick a different image if needed
+    let attempts = 0;
+    while (usedImageIds.has(selectedPhoto.id) && attempts < searchResult.results.length) {
+      console.log(chalk.yellow(`  ⚠️  Image already used, selecting alternative...`));
+      attempts++;
+      // Try the next image in the results
+      const nextIndex = (selectionResult.imageIndex + attempts) % searchResult.results.length;
+      selectedPhoto = searchResult.results[nextIndex];
+    }
+
+    // If all images have been used (unlikely but possible), use it anyway
+    if (usedImageIds.has(selectedPhoto.id)) {
+      console.log(chalk.yellow(`  ⚠️  All available images used, allowing duplicate`));
+    }
+
+    // Mark this image as used
+    usedImageIds.add(selectedPhoto.id);
 
     console.log(chalk.green(`  ✓ Selected: ${selectedPhoto.description || selectedPhoto.alt_description || 'Image'}`));
     console.log(chalk.gray(`    By ${selectedPhoto.user.name} on Unsplash`));

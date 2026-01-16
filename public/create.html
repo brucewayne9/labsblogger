@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Blog Post</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
 </head>
 <body>
     <nav class="navbar">
-        <h1>✍️ Create Blog Post</h1>
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Create Blog Post</h1>
+        </div>
         <div class="nav-buttons">
             <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
             <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
@@ -27,6 +31,7 @@
         <!-- Step 1: Brainstorming -->
         <div id="step1" class="step active">
             <h2>Brainstorm Your Blog Post</h2>
+            <p class="step-subtitle">Tell us what you want to write about and we'll help you create it</p>
             <div id="blogInfo" class="info-box"></div>
 
             <div class="form-group">
@@ -69,6 +74,7 @@
         <!-- Step 2: Outline Review -->
         <div id="step2" class="step">
             <h2>Review Article Outline</h2>
+            <p class="step-subtitle">Check the structure and flow of your article</p>
             <div id="outlineDisplay"></div>
             <div class="button-group">
                 <button onclick="goToStep(1)" class="btn-secondary">← Back</button>
@@ -79,6 +85,7 @@
         <!-- Step 3: Article Review -->
         <div id="step3" class="step">
             <h2>Article Generated</h2>
+            <p class="step-subtitle">Your AI-written article is ready for review</p>
             <div id="articleDisplay"></div>
             <div class="button-group">
                 <button onclick="goToStep(2)" class="btn-secondary">← Back</button>
@@ -86,23 +93,125 @@
             </div>
         </div>
 
-        <!-- Step 4: Image Selection -->
+        <!-- Step 4: Featured Image Selection -->
         <div id="step4" class="step">
-            <h2>Selecting Images...</h2>
+            <h2>Choose Your Featured Image</h2>
+            <p class="step-subtitle">Select an AI-suggested image or upload your own</p>
+
+            <div class="image-source-toggle">
+                <button class="toggle-btn active" onclick="showAIImages()" id="aiImagesBtn">
+                    🤖 AI Selected Images
+                </button>
+                <button class="toggle-btn" onclick="showUploadImages()" id="uploadImagesBtn">
+                    📤 Upload My Own
+                </button>
+            </div>
+
+            <div id="aiImagesSection">
+                <div id="featuredCandidates">
+                    <div class="loader">Finding featured image options...</div>
+                </div>
+                <div class="button-group hidden" id="featuredButtons">
+                    <button onclick="goToStep(3)" class="btn-secondary">← Back</button>
+                    <button onclick="confirmFeaturedSelection()" class="btn-primary" id="confirmFeaturedBtn" disabled>Continue with Selected Image →</button>
+                </div>
+            </div>
+
+            <div id="uploadImagesSection" class="hidden">
+                <div class="upload-area">
+                    <h3>Upload Featured Image</h3>
+                    <div class="file-upload">
+                        <input type="file" id="featuredUpload" accept="image/*" onchange="handleFeaturedUpload(event)">
+                        <label for="featuredUpload" class="upload-label">
+                            <span class="upload-icon">📸</span>
+                            <span id="featuredFileName">Click to select or drag & drop an image</span>
+                            <small>PNG, JPG, WEBP up to 10MB</small>
+                        </label>
+                    </div>
+                    <div id="featuredPreview" class="hidden">
+                        <img id="featuredPreviewImg" src="" alt="Preview">
+                        <button onclick="removeFeaturedUpload()" class="btn-danger">Remove</button>
+                    </div>
+                </div>
+
+                <div class="upload-area">
+                    <h3>Upload Article Images (Optional)</h3>
+                    <p class="upload-subtitle">Add images to place throughout your article</p>
+                    <div class="file-upload">
+                        <input type="file" id="inlineUploads" accept="image/*" multiple onchange="handleInlineUploads(event)">
+                        <label for="inlineUploads" class="upload-label">
+                            <span class="upload-icon">🖼️</span>
+                            <span>Click to select or drag & drop images</span>
+                            <small>Select multiple images at once</small>
+                        </label>
+                    </div>
+                    <div id="inlinePreview" class="upload-preview-grid"></div>
+                </div>
+
+                <div class="button-group">
+                    <button onclick="goToStep(3)" class="btn-secondary">← Back</button>
+                    <button onclick="confirmUploadedImages()" class="btn-primary" id="confirmUploadBtn" disabled>Continue with Uploaded Images →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4b: All Images Display -->
+        <div id="step4b" class="step">
+            <h2>All Selected Images</h2>
+            <p class="step-subtitle">Review your featured and article images</p>
             <div id="imagesDisplay">
-                <div class="loader">Finding perfect images for your article...</div>
+                <div class="loader">Finalizing image selection...</div>
             </div>
             <div class="button-group hidden" id="imagesButtons">
-                <button onclick="goToStep(3)" class="btn-secondary">← Back</button>
+                <button onclick="goToStep(4)" class="btn-secondary">← Change Featured Image</button>
                 <button onclick="goToPublish()" class="btn-primary">Publish to WordPress →</button>
             </div>
         </div>
 
-        <!-- Step 5: Publishing -->
+        <!-- Step 5: Publishing Options -->
         <div id="step5" class="step">
-            <h2>Publishing to WordPress</h2>
-            <div id="publishDisplay">
-                <div class="loader">Creating draft on WordPress...</div>
+            <h2>Publish to WordPress</h2>
+            <p class="step-subtitle">Choose how you want to publish your article</p>
+
+            <div class="publish-options">
+                <div class="publish-option">
+                    <input type="radio" id="publishDraft" name="publishType" value="draft" checked>
+                    <label for="publishDraft">
+                        <span class="option-title">Save as Draft</span>
+                        <span class="option-description">Review and edit in WordPress before publishing</span>
+                    </label>
+                </div>
+
+                <div class="publish-option">
+                    <input type="radio" id="publishNow" name="publishType" value="publish">
+                    <label for="publishNow">
+                        <span class="option-title">Publish Immediately</span>
+                        <span class="option-description">Article will be live on your blog right away</span>
+                    </label>
+                </div>
+
+                <div class="publish-option">
+                    <input type="radio" id="publishSchedule" name="publishType" value="future">
+                    <label for="publishSchedule">
+                        <span class="option-title">Schedule for Later</span>
+                        <span class="option-description">Choose a specific date and time to publish</span>
+                    </label>
+                </div>
+
+                <div id="scheduleDateTime" class="schedule-datetime hidden">
+                    <label for="scheduleDate">Date & Time:</label>
+                    <input type="datetime-local" id="scheduleDate">
+                    <small>Timezone: Your WordPress site's timezone</small>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="goToStep('4b')" class="btn-secondary">← Back</button>
+                <button onclick="executePublish()" class="btn-primary">Complete Publishing →</button>
+            </div>
+
+            <div id="publishDisplay" class="hidden">
+                <div class="loader">Processing...</div>
             </div>
         </div>
     </div>
@@ -116,6 +225,10 @@
         let article = null;
         let images = null;
         let currentStep = 1;
+        let featuredCandidates = [];
+        let selectedFeaturedId = null;
+        let uploadedFeatured = null;
+        let uploadedInline = [];
 
         // Check auth and load blog info
         async function init() {
@@ -150,8 +263,14 @@
         function goToStep(step) {
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.progress-step').forEach(s => s.classList.remove('active'));
-            document.getElementById(`step${step}`).classList.add('active');
-            document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
+            const stepElement = document.getElementById(`step${step}`);
+            if (stepElement) {
+                stepElement.classList.add('active');
+            }
+            const progressElement = document.querySelector(`.progress-step[data-step="${step}"]`);
+            if (progressElement) {
+                progressElement.classList.add('active');
+            }
             currentStep = step;
         }
 
@@ -173,8 +292,31 @@
                 body: JSON.stringify({ blogId, brief })
             });
 
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('outlineDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error generating outline</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
             const data = await response.json();
             outline = data.outline;
+
+            if (!outline) {
+                document.getElementById('outlineDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No outline received</h3>
+                        <p>The server didn't return an outline. Please try again.</p>
+                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
 
             displayOutline();
         }
@@ -202,6 +344,11 @@
         }
 
         async function generateArticle() {
+            if (!outline) {
+                alert('Please generate an outline first!');
+                return;
+            }
+
             goToStep(3);
             document.getElementById('articleDisplay').innerHTML = '<div class="loader">Writing article...</div>';
 
@@ -211,8 +358,31 @@
                 body: JSON.stringify({ blogId, outline, brief })
             });
 
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('articleDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error generating article</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
             const data = await response.json();
             article = data.article;
+
+            if (!article) {
+                document.getElementById('articleDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No article received</h3>
+                        <p>The server didn't return an article. Please try again.</p>
+                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
 
             document.getElementById('articleDisplay').innerHTML = `
                 <div class="article-box">
@@ -225,50 +395,254 @@
         }
 
         async function selectImagesStep() {
-            goToStep(4);
+            if (!article) {
+                alert('Please generate an article first!');
+                return;
+            }
 
-            const response = await fetch('/api/images', {
+            goToStep(4);
+            document.getElementById('featuredCandidates').innerHTML = '<div class="loader">Finding featured image options...</div>';
+
+            const response = await fetch('/api/featured-candidates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ article, brief })
             });
 
-            const data = await response.json();
-            images = data.images;
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('featuredCandidates').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error finding images</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="selectImagesStep()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
 
-            document.getElementById('imagesDisplay').innerHTML = `
-                <div class="images-grid">
-                    ${images.allImages.map(img => `
-                        <div class="image-card">
-                            <img src="${img.url}" alt="${img.altText}">
-                            <p>${img.position}</p>
-                            <p class="image-credit">${img.credit}</p>
+            const data = await response.json();
+            featuredCandidates = data.candidates;
+
+            if (!featuredCandidates || featuredCandidates.length === 0) {
+                document.getElementById('featuredCandidates').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No images found</h3>
+                        <p>No suitable images were found. Please try again.</p>
+                        <button onclick="selectImagesStep()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            displayFeaturedCandidates();
+        }
+
+        function displayFeaturedCandidates() {
+            document.getElementById('featuredCandidates').innerHTML = `
+                <div class="featured-grid">
+                    ${featuredCandidates.map((candidate, index) => `
+                        <div class="featured-candidate" data-image-id="${candidate.id}" onclick="selectFeaturedCandidate('${candidate.id}')">
+                            <img src="${candidate.thumbUrl}" alt="${candidate.altText}">
+                            <div class="featured-info">
+                                <p class="featured-description">${candidate.description}</p>
+                                <p class="featured-credit">${candidate.credit}</p>
+                            </div>
+                            <div class="featured-checkmark">✓</div>
                         </div>
                     `).join('')}
                 </div>
             `;
 
+            document.getElementById('featuredButtons').classList.remove('hidden');
+        }
+
+        function selectFeaturedCandidate(imageId) {
+            selectedFeaturedId = imageId;
+
+            // Remove selected class from all candidates
+            document.querySelectorAll('.featured-candidate').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to clicked candidate
+            document.querySelector(`[data-image-id="${imageId}"]`).classList.add('selected');
+
+            // Enable continue button
+            document.getElementById('confirmFeaturedBtn').disabled = false;
+        }
+
+        async function confirmFeaturedSelection() {
+            if (!selectedFeaturedId) {
+                alert('Please select a featured image first!');
+                return;
+            }
+
+            goToStep('4b');
+            document.getElementById('imagesDisplay').innerHTML = '<div class="loader">Finalizing image selection...</div>';
+
+            const response = await fetch('/api/images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ article, brief, selectedFeaturedId })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('imagesDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error selecting images</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="goToStep(4)" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = await response.json();
+            images = data.images;
+
+            if (!images || !images.allImages) {
+                document.getElementById('imagesDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No images received</h3>
+                        <p>The server didn't return images. Please try again.</p>
+                        <button onclick="goToStep(4)" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('imagesDisplay').innerHTML = `
+                <h3 class="images-section-title">Featured Image</h3>
+                <div class="featured-final">
+                    <img src="${images.featuredImage.url}" alt="${images.featuredImage.altText}">
+                    <p class="image-credit">${images.featuredImage.credit}</p>
+                </div>
+
+                ${images.inlineImages.length > 0 ? `
+                    <h3 class="images-section-title">Article Images</h3>
+                    <div class="images-grid">
+                        ${images.inlineImages.map(img => `
+                            <div class="image-card">
+                                <img src="${img.url}" alt="${img.altText}">
+                                <p class="image-credit">${img.credit}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+
             document.getElementById('imagesButtons').classList.remove('hidden');
         }
 
-        async function goToPublish() {
+        function goToPublish() {
             goToStep(5);
+
+            // Set minimum datetime to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('scheduleDate').min = now.toISOString().slice(0, 16);
+
+            // Set default to 1 hour from now
+            const defaultDate = new Date(now.getTime() + 60 * 60 * 1000);
+            document.getElementById('scheduleDate').value = defaultDate.toISOString().slice(0, 16);
+        }
+
+        // Toggle schedule datetime picker
+        document.addEventListener('DOMContentLoaded', function() {
+            const radios = document.querySelectorAll('input[name="publishType"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const schedulePicker = document.getElementById('scheduleDateTime');
+                    if (this.value === 'future') {
+                        schedulePicker.classList.remove('hidden');
+                    } else {
+                        schedulePicker.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        async function executePublish() {
+            const publishType = document.querySelector('input[name="publishType"]:checked').value;
+            let scheduleDate = null;
+
+            // Validate schedule date if scheduling
+            if (publishType === 'future') {
+                const dateInput = document.getElementById('scheduleDate').value;
+                if (!dateInput) {
+                    alert('Please select a date and time for scheduling');
+                    return;
+                }
+
+                // Convert to WordPress-compatible ISO format
+                scheduleDate = new Date(dateInput).toISOString();
+
+                // Check if date is in the future
+                if (new Date(dateInput) <= new Date()) {
+                    alert('Scheduled date must be in the future');
+                    return;
+                }
+            }
+
+            // Hide options, show loading
+            document.querySelector('.publish-options').style.display = 'none';
+            document.querySelector('.button-group').style.display = 'none';
+            document.getElementById('publishDisplay').classList.remove('hidden');
+
+            const loadingText = publishType === 'publish' ? 'Publishing article...' :
+                              publishType === 'future' ? 'Scheduling article...' :
+                              'Creating draft...';
+            document.getElementById('publishDisplay').innerHTML = `<div class="loader">${loadingText}</div>`;
 
             const response = await fetch('/api/publish', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ blogId, article, images })
+                body: JSON.stringify({
+                    blogId,
+                    article,
+                    images,
+                    publishStatus: publishType,
+                    scheduleDate: scheduleDate
+                })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                document.getElementById('publishDisplay').innerHTML = `
-                    <div class="success-box">
-                        <h3>✅ Draft Created Successfully!</h3>
+                let message = '';
+                let actionButton = '';
+
+                if (data.status === 'publish') {
+                    message = `
+                        <h3>✅ Article Published Successfully!</h3>
+                        <p>Your article is now live on your blog.</p>
+                        <p>Post ID: ${data.postId}</p>
+                        <p><a href="${data.publishUrl}" target="_blank" class="btn-primary">View Published Article →</a></p>
+                        <p><a href="${data.editUrl}" target="_blank">Edit in WordPress</a></p>
+                    `;
+                } else if (data.status === 'future') {
+                    message = `
+                        <h3>✅ Article Scheduled Successfully!</h3>
+                        <p>Your article will be published automatically.</p>
+                        <p>Scheduled for: <strong>${new Date(data.scheduledDate).toLocaleString()}</strong></p>
                         <p>Post ID: ${data.postId}</p>
                         <p><a href="${data.editUrl}" target="_blank">Edit in WordPress →</a></p>
-                        <button onclick="location.href='index.html'" class="btn-primary">Create Another Post</button>
+                    `;
+                } else {
+                    message = `
+                        <h3>✅ Draft Created Successfully!</h3>
+                        <p>Your article is saved as a draft.</p>
+                        <p>Post ID: ${data.postId}</p>
+                        <p><a href="${data.editUrl}" target="_blank" class="btn-primary">Edit in WordPress →</a></p>
+                    `;
+                }
+
+                document.getElementById('publishDisplay').innerHTML = `
+                    <div class="success-box">
+                        ${message}
+                        <button onclick="location.href='index.html'" class="btn-secondary">Create Another Post</button>
                     </div>
                 `;
             } else {
@@ -276,7 +650,7 @@
                     <div class="error-box">
                         <h3>❌ Publishing Failed</h3>
                         <p>${data.error}</p>
-                        <button onclick="goToStep(4)" class="btn-secondary">Try Again</button>
+                        <button onclick="location.reload()" class="btn-primary">Try Again</button>
                     </div>
                 `;
             }
@@ -285,6 +659,180 @@
         function countWords(html) {
             const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
             return text.split(' ').length;
+        }
+
+        // Toggle between AI and upload sections
+        function showAIImages() {
+            document.getElementById('aiImagesSection').classList.remove('hidden');
+            document.getElementById('uploadImagesSection').classList.add('hidden');
+            document.getElementById('aiImagesBtn').classList.add('active');
+            document.getElementById('uploadImagesBtn').classList.remove('active');
+        }
+
+        function showUploadImages() {
+            document.getElementById('aiImagesSection').classList.add('hidden');
+            document.getElementById('uploadImagesSection').classList.remove('hidden');
+            document.getElementById('aiImagesBtn').classList.remove('active');
+            document.getElementById('uploadImagesBtn').classList.add('active');
+        }
+
+        // Handle featured image upload
+        function handleFeaturedUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB');
+                return;
+            }
+
+            uploadedFeatured = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('featuredPreviewImg').src = e.target.result;
+                document.getElementById('featuredPreview').classList.remove('hidden');
+                document.getElementById('featuredFileName').textContent = file.name;
+                document.getElementById('confirmUploadBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeFeaturedUpload() {
+            uploadedFeatured = null;
+            document.getElementById('featuredUpload').value = '';
+            document.getElementById('featuredPreview').classList.add('hidden');
+            document.getElementById('featuredFileName').textContent = 'Click to select or drag & drop an image';
+
+            // Disable continue button if no images
+            if (uploadedInline.length === 0) {
+                document.getElementById('confirmUploadBtn').disabled = true;
+            }
+        }
+
+        // Handle inline images upload
+        function handleInlineUploads(event) {
+            const files = Array.from(event.target.files);
+
+            for (const file of files) {
+                // Validate file size
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`${file.name} is too large. Max size is 10MB`);
+                    continue;
+                }
+
+                uploadedInline.push(file);
+            }
+
+            displayInlinePreview();
+            document.getElementById('confirmUploadBtn').disabled = false;
+        }
+
+        function displayInlinePreview() {
+            const previewContainer = document.getElementById('inlinePreview');
+            previewContainer.innerHTML = '';
+
+            uploadedInline.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewCard = document.createElement('div');
+                    previewCard.className = 'upload-preview-card';
+                    previewCard.innerHTML = `
+                        <img src="${e.target.result}" alt="${file.name}">
+                        <p>${file.name}</p>
+                        <button onclick="removeInlineUpload(${index})" class="btn-danger btn-sm">Remove</button>
+                    `;
+                    previewContainer.appendChild(previewCard);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeInlineUpload(index) {
+            uploadedInline.splice(index, 1);
+            displayInlinePreview();
+
+            // Disable continue if no images left
+            if (!uploadedFeatured && uploadedInline.length === 0) {
+                document.getElementById('confirmUploadBtn').disabled = true;
+            }
+        }
+
+        async function confirmUploadedImages() {
+            if (!uploadedFeatured && uploadedInline.length === 0) {
+                alert('Please upload at least one image');
+                return;
+            }
+
+            goToStep('4b');
+            document.getElementById('imagesDisplay').innerHTML = '<div class="loader">Uploading and processing images...</div>';
+
+            try {
+                // Create FormData for file uploads
+                const formData = new FormData();
+
+                if (uploadedFeatured) {
+                    formData.append('featuredImage', uploadedFeatured);
+                }
+
+                uploadedInline.forEach((file, index) => {
+                    formData.append('inlineImages', file);
+                });
+
+                // Send to server
+                const response = await fetch('/api/upload-images', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload images');
+                }
+
+                const data = await response.json();
+                images = data.images;
+
+                // Display uploaded images
+                let html = '';
+
+                if (images.featuredImage) {
+                    html += `
+                        <h3 class="images-section-title">Featured Image</h3>
+                        <div class="featured-final">
+                            <img src="${images.featuredImage.url}" alt="${images.featuredImage.altText}">
+                            <p class="image-credit">Uploaded by you</p>
+                        </div>
+                    `;
+                }
+
+                if (images.inlineImages && images.inlineImages.length > 0) {
+                    html += `
+                        <h3 class="images-section-title">Article Images</h3>
+                        <div class="images-grid">
+                            ${images.inlineImages.map(img => `
+                                <div class="image-card">
+                                    <img src="${img.url}" alt="${img.altText}">
+                                    <p class="image-credit">Uploaded by you</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                document.getElementById('imagesDisplay').innerHTML = html;
+                document.getElementById('imagesButtons').classList.remove('hidden');
+
+            } catch (error) {
+                document.getElementById('imagesDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Upload Failed</h3>
+                        <p>${error.message}</p>
+                        <button onclick="goToStep(4)" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+            }
         }
 
         init();

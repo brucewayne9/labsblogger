@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outline - The Blogger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Create Blog Post</h1>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-step" data-step="1">1</div>
+            <div class="progress-step active" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+        </div>
+
+        <h2>Review Article Outline</h2>
+        <p class="step-subtitle">Check the structure and flow of your article</p>
+
+        <div id="outlineDisplay">
+            <div class="loader">Generating outline...</div>
+        </div>
+
+        <div class="button-group" id="outlineButtons" style="display: none;">
+            <button onclick="location.href='create-brainstorm.html'" class="btn-secondary">← Back</button>
+            <button onclick="generateArticle()" class="btn-primary">Generate Article →</button>
+        </div>
+    </div>
+
+    <script>
+        let blogId = sessionStorage.getItem('selectedBlogId');
+        let brief = JSON.parse(sessionStorage.getItem('brief') || '{}');
+        let outline = null;
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        async function init() {
+            if (!blogId || !brief.topic) {
+                location.href = 'create-brainstorm.html';
+                return;
+            }
+
+            await generateOutline();
+        }
+
+        async function generateOutline() {
+            const response = await fetch('/api/outline', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blogId, brief })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('outlineDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Error generating outline</h3>
+                        <p>${error.error || 'Unknown error'}</p>
+                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = await response.json();
+            outline = data.outline;
+
+            if (!outline) {
+                document.getElementById('outlineDisplay').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ No outline received</h3>
+                        <p>The server didn't return an outline. Please try again.</p>
+                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Save outline
+            sessionStorage.setItem('outline', JSON.stringify(outline));
+
+            // Display outline
+            document.getElementById('outlineDisplay').innerHTML = `
+                <div class="outline-box">
+                    <h3>📌 ${outline.headline}</h3>
+                    <p><strong>Introduction:</strong> ${outline.introHook}</p>
+                    <h4>Sections:</h4>
+                    <ol>
+                        ${outline.sections.map(s => `
+                            <li>
+                                <strong>${s.heading}</strong>
+                                <ul>
+                                    ${s.points.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </li>
+                        `).join('')}
+                    </ol>
+                    <p><strong>CTA:</strong> ${outline.cta}</p>
+                </div>
+            `;
+
+            document.getElementById('outlineButtons').style.display = 'flex';
+        }
+
+        async function generateArticle() {
+            location.href = 'create-article.html';
+        }
+
+        init();
+    </script>
+</body>
+</html>

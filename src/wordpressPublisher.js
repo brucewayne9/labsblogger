@@ -193,9 +193,11 @@ async function uploadImageToWordPress(imageUrl, altText, caption) {
   }
 }
 
-// Create draft post
-export async function createDraft(article, images) {
-  console.log(chalk.cyan('\n📤 Creating WordPress draft...\n'));
+// Create draft post (with optional publish/schedule)
+export async function createDraft(article, images, options = {}) {
+  const { publishStatus = 'draft', scheduleDate = null } = options;
+
+  console.log(chalk.cyan('\n📤 Creating WordPress post...\n'));
 
   try {
     const auth = getWordPressAuth();
@@ -225,8 +227,12 @@ export async function createDraft(article, images) {
     let updatedContent = article.content;
     if (images.inlineImages && images.inlineImages.length > 0) {
       console.log(chalk.yellow(`\nUploading ${images.inlineImages.length} inline images...`));
+      console.log(chalk.gray('Debug: Inline images:', JSON.stringify(images.inlineImages.map(img => ({ placeholder: img.placeholder, position: img.position })), null, 2)));
 
       for (const image of images.inlineImages) {
+        console.log(chalk.gray(`\nDebug: Processing image with placeholder: "${image.placeholder}"`));
+        console.log(chalk.gray(`Debug: Placeholder in content: ${updatedContent.includes(image.placeholder || '')}`));
+
         const uploadResult = await uploadImageToWordPress(
           image.url,
           image.altText,
@@ -234,6 +240,8 @@ export async function createDraft(article, images) {
         );
 
         if (uploadResult && image.placeholder) {
+          console.log(chalk.gray(`Debug: Replacing placeholder "${image.placeholder}" with uploaded image`));
+
           // Replace placeholder with WordPress image HTML
           const imageHtml = `
 <figure class="wp-block-image">
@@ -241,7 +249,17 @@ export async function createDraft(article, images) {
   <figcaption>${image.credit}</figcaption>
 </figure>`;
 
+          const beforeLength = updatedContent.length;
           updatedContent = updatedContent.replace(image.placeholder, imageHtml);
+          const afterLength = updatedContent.length;
+
+          if (beforeLength === afterLength) {
+            console.log(chalk.red(`Debug: Placeholder "${image.placeholder}" NOT found in content!`));
+          } else {
+            console.log(chalk.green(`Debug: Successfully replaced placeholder`));
+          }
+        } else if (!image.placeholder) {
+          console.log(chalk.yellow(`Debug: Image has no placeholder property!`));
         }
       }
     }
@@ -250,16 +268,21 @@ export async function createDraft(article, images) {
     updatedContent = updatedContent.replace(/\[IMAGE:\s*[^\]]+\]/g, '');
 
     // Create post
-    const postSpinner = ora('Creating draft post...').start();
+    const postSpinner = ora(`Creating ${publishStatus === 'publish' ? 'published' : publishStatus === 'future' ? 'scheduled' : 'draft'} post...`).start();
 
     const postData = {
       title: article.title,
       content: updatedContent,
       excerpt: article.excerpt,
-      status: process.env.DEFAULT_POST_STATUS || 'draft',
+      status: publishStatus,
       categories: categoryIds,
       tags: tagIds,
     };
+
+    // Add schedule date if scheduling
+    if (publishStatus === 'future' && scheduleDate) {
+      postData.date = scheduleDate;
+    }
 
     if (featuredMediaId) {
       postData.featured_media = featuredMediaId;
@@ -271,7 +294,7 @@ export async function createDraft(article, images) {
       { headers: auth.headers, httpsAgent }
     );
 
-    postSpinner.succeed(chalk.green('Draft created successfully!'));
+    postSpinner.succeed(chalk.green(`Post ${publishStatus === 'publish' ? 'published' : publishStatus === 'future' ? 'scheduled' : 'created as draft'} successfully!`));
 
     const post = response.data;
 
@@ -286,23 +309,32 @@ export async function createDraft(article, images) {
     const postStatus = post.status || 'draft';
     const postLink = post.link || post.guid?.rendered || post.guid;
 
-    console.log(chalk.green('\n✓ WordPress draft created!\n'));
+    console.log(chalk.green(`\n✓ WordPress post ${publishStatus === 'publish' ? 'published' : publishStatus === 'future' ? 'scheduled' : 'created'}!\n`));
     console.log(chalk.bold('Post Details:'));
     console.log(chalk.gray('─'.repeat(60)));
     console.log(chalk.white(`Post ID: ${postId}`));
     console.log(chalk.white(`Title: ${postTitle}`));
     console.log(chalk.white(`Status: ${postStatus}`));
+    if (publishStatus === 'future' && post.date) {
+      console.log(chalk.white(`Scheduled for: ${post.date}`));
+    }
     console.log(chalk.white(`Edit URL: ${auth.url}/wp-admin/post.php?post=${postId}&action=edit`));
+    if (publishStatus === 'publish') {
+      console.log(chalk.white(`View URL: ${postLink}`));
+    }
     console.log(chalk.gray('─'.repeat(60)));
 
     return {
       success: true,
       postId: postId,
+      status: postStatus,
       editUrl: `${auth.url}/wp-admin/post.php?post=${postId}&action=edit`,
       previewUrl: postLink,
+      publishUrl: publishStatus === 'publish' ? postLink : null,
+      scheduledDate: publishStatus === 'future' ? post.date : null,
     };
   } catch (error) {
-    console.log(chalk.red('\n✗ Failed to create draft'));
+    console.log(chalk.red('\n✗ Failed to create post'));
 
     if (error.response?.status === 401) {
       console.log(chalk.red('Authentication failed. Please check your WordPress credentials in .env'));

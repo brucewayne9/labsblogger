@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish - The Blogger</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-improvements.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logo.png" alt="The Blogger" class="navbar-logo">
+            <h1>Create Blog Post</h1>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-step" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step active" data-step="5">5</div>
+        </div>
+
+        <div id="publishOptions">
+            <h2>Publish to WordPress</h2>
+            <p class="step-subtitle">Choose how you want to publish your article</p>
+
+            <div class="publish-options">
+                <div class="publish-option">
+                    <input type="radio" id="publishDraft" name="publishType" value="draft" checked>
+                    <label for="publishDraft">
+                        <span class="option-title">Save as Draft</span>
+                        <span class="option-description">Review and edit in WordPress before publishing</span>
+                    </label>
+                </div>
+
+                <div class="publish-option">
+                    <input type="radio" id="publishNow" name="publishType" value="publish">
+                    <label for="publishNow">
+                        <span class="option-title">Publish Immediately</span>
+                        <span class="option-description">Article will be live on your blog right away</span>
+                    </label>
+                </div>
+
+                <div class="publish-option">
+                    <input type="radio" id="publishSchedule" name="publishType" value="future">
+                    <label for="publishSchedule">
+                        <span class="option-title">Schedule for Later</span>
+                        <span class="option-description">Choose a specific date and time to publish</span>
+                    </label>
+                </div>
+
+                <div id="scheduleDateTime" class="schedule-datetime hidden">
+                    <label for="scheduleDate">Date & Time:</label>
+                    <input type="datetime-local" id="scheduleDate">
+                    <small>Timezone: Your WordPress site's timezone</small>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="location.href='create-images.html'" class="btn-secondary">← Back</button>
+                <button onclick="executePublish()" class="btn-primary" id="publishBtn">Complete Publishing →</button>
+            </div>
+        </div>
+
+        <div id="publishResult" class="hidden">
+            <div class="loader">Processing...</div>
+        </div>
+    </div>
+
+    <script>
+        let blogId = sessionStorage.getItem('selectedBlogId');
+        let article = JSON.parse(sessionStorage.getItem('article') || '{}');
+        let images = JSON.parse(sessionStorage.getItem('images') || '{}');
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = 'index.html';
+        }
+
+        function init() {
+            if (!blogId || !article.title || !images) {
+                location.href = 'create-brainstorm.html';
+                return;
+            }
+
+            // Set minimum datetime to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('scheduleDate').min = now.toISOString().slice(0, 16);
+
+            // Set default to 1 hour from now
+            const defaultDate = new Date(now.getTime() + 60 * 60 * 1000);
+            document.getElementById('scheduleDate').value = defaultDate.toISOString().slice(0, 16);
+
+            // Setup radio button listeners
+            document.querySelectorAll('input[name="publishType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const schedulePicker = document.getElementById('scheduleDateTime');
+                    if (this.value === 'future') {
+                        schedulePicker.classList.remove('hidden');
+                    } else {
+                        schedulePicker.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        async function executePublish() {
+            const publishType = document.querySelector('input[name="publishType"]:checked').value;
+            let scheduleDate = null;
+
+            // Validate schedule date if scheduling
+            if (publishType === 'future') {
+                const dateInput = document.getElementById('scheduleDate').value;
+                if (!dateInput) {
+                    alert('Please select a date and time for scheduling');
+                    return;
+                }
+
+                scheduleDate = new Date(dateInput).toISOString();
+
+                // Check if date is in the future
+                if (new Date(dateInput) <= new Date()) {
+                    alert('Scheduled date must be in the future');
+                    return;
+                }
+            }
+
+            // Hide options, show loading
+            document.getElementById('publishOptions').classList.add('hidden');
+            document.getElementById('publishResult').classList.remove('hidden');
+
+            const loadingText = publishType === 'publish' ? 'Publishing article...' :
+                              publishType === 'future' ? 'Scheduling article...' :
+                              'Creating draft...';
+            document.getElementById('publishResult').innerHTML = `<div class="loader">${loadingText}</div>`;
+
+            try {
+                const response = await fetch('/api/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        blogId,
+                        article,
+                        images,
+                        publishStatus: publishType,
+                        scheduleDate: scheduleDate
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let message = '';
+
+                    if (data.status === 'publish') {
+                        message = `
+                            <h3>✅ Article Published Successfully!</h3>
+                            <p>Your article is now live on your blog.</p>
+                            <p><strong>Post ID:</strong> ${data.postId}</p>
+                            <p><a href="${data.publishUrl}" target="_blank" class="btn-primary">View Published Article →</a></p>
+                            <p><a href="${data.editUrl}" target="_blank">Edit in WordPress</a></p>
+                        `;
+                    } else if (data.status === 'future') {
+                        message = `
+                            <h3>✅ Article Scheduled Successfully!</h3>
+                            <p>Your article will be published automatically.</p>
+                            <p><strong>Scheduled for:</strong> ${new Date(data.scheduledDate).toLocaleString()}</p>
+                            <p><strong>Post ID:</strong> ${data.postId}</p>
+                            <p><a href="${data.editUrl}" target="_blank" class="btn-primary">Edit in WordPress →</a></p>
+                        `;
+                    } else {
+                        message = `
+                            <h3>✅ Draft Created Successfully!</h3>
+                            <p>Your article is saved as a draft.</p>
+                            <p><strong>Post ID:</strong> ${data.postId}</p>
+                            <p><a href="${data.editUrl}" target="_blank" class="btn-primary">Edit in WordPress →</a></p>
+                        `;
+                    }
+
+                    document.getElementById('publishResult').innerHTML = `
+                        <div class="success-box">
+                            ${message}
+                            <button onclick="createAnother()" class="btn-secondary">Create Another Post</button>
+                        </div>
+                    `;
+
+                    // Clear session data
+                    sessionStorage.removeItem('brief');
+                    sessionStorage.removeItem('outline');
+                    sessionStorage.removeItem('article');
+                    sessionStorage.removeItem('images');
+
+                } else {
+                    throw new Error(data.error || 'Publishing failed');
+                }
+
+            } catch (error) {
+                document.getElementById('publishResult').innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Publishing Failed</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" class="btn-primary">Try Again</button>
+                        <button onclick="location.href='create-images.html'" class="btn-secondary">← Go Back</button>
+                    </div>
+                `;
+            }
+        }
+
+        function createAnother() {
+            location.href = 'index.html';
+        }
+
+        init();
+    </script>
+</body>
+</html>

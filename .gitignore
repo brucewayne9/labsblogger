@@ -4,6 +4,12 @@
 # Blog configurations (contains passwords)
 blogs.json
 
+# User database (contains passwords)
+users.json
+
+# Uploaded images
+uploads/
+
 # Node modules
 node_modules/
 

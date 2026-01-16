@@ -1,17 +1,25 @@
-# Blog Manager App
+# The Blogger - AI Blog Manager App
 
-**Web-based multi-blog content management system** - Create AI-powered blog posts for multiple WordPress sites from one dashboard.
+**Multi-user AI blog management system** - Create and publish AI-powered blog posts to WordPress with team collaboration and role-based access.
 
 ## Features
 
-- **Multi-Blog Support** - Manage unlimited WordPress blogs from one interface
-- **AI-Powered Content** - Generate 850+ word SEO-optimized articles with OpenAI GPT-4
-- **Auto Image Selection** - 4+ professionally selected images per post from Unsplash
-- **WordPress Integration** - Publish directly to WordPress as drafts or live posts
-- **Password Protected** - Secure web interface with session-based authentication
-- **Admin Panel** - Add, edit, and delete blogs easily
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **5-Step Workflow** - Brainstorm → Outline → Article → Images → Publish
+- **Multi-User System** - Support for multiple users with role-based access control
+  - Super Admin - Full system access
+  - Admin - Manage assigned blogs and users
+  - Editor - Create and publish blog posts
+- **Multi-Blog Support** - Manage unlimited WordPress blogs from one dashboard
+- **AI-Powered Content** - Generate 1200+ word SEO-optimized articles with Claude Sonnet 4.5
+- **Dual Image Selection** - Choose AI-selected images from Unsplash OR upload your own
+- **5-Step Creation Flow** - Each step on its own dedicated page
+  1. Brainstorm (topic, angle, audience, tone)
+  2. Review outline
+  3. Review generated article
+  4. Select/upload images
+  5. Publish (draft/immediate/scheduled)
+- **WordPress Integration** - Publish directly with scheduling support
+- **Session-Based Auth** - Secure authentication with encrypted sessions
+- **Responsive Design** - Clean, modern UI with circular progress indicators
 
 ## Quick Start
 
@@ -19,7 +27,7 @@
 
 - Node.js v18 or higher
 - WordPress site(s) with REST API enabled
-- OpenAI API key
+- Anthropic Claude API key
 - Unsplash API key (free tier available)
 
 ### Installation
@@ -27,7 +35,7 @@
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/YOUR_USERNAME/blog-manager-app.git
-   cd blog-manager-app
+   cd "Blog Manager App"
    ```
 
 2. **Install dependencies:**
@@ -40,23 +48,19 @@
    cp .env.example .env
    ```
 
-   Edit `.env` and add your credentials:
+   Edit `.env` and add your API keys:
    ```env
-   APP_PASSWORD=YourSecurePassword123
-   SESSION_SECRET=random_secret_key_here
-   OPENAI_API_KEY=your_openai_api_key
-   UNSPLASH_ACCESS_KEY=your_unsplash_access_key
-   PORT=12800
-   MIN_IMAGES_PER_POST=4
-   MIN_WORD_COUNT=850
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
+   SESSION_SECRET=random_session_secret_here
+   PORT=3000
    ```
 
-4. **Set up blog configuration:**
+4. **Create initial data files:**
    ```bash
-   cp blogs.json.example blogs.json
+   echo "[]" > blogs.json
+   echo "[]" > users.json
    ```
-
-   Edit `blogs.json` with your WordPress sites (or use the admin panel after starting)
 
 5. **Start the server:**
    ```bash
@@ -65,20 +69,24 @@
 
 6. **Open in browser:**
    ```
-   http://localhost:12800
+   http://localhost:3000
    ```
 
 ## First Time Setup
 
-### 1. Login
+### 1. Create Super Admin Account
 
-Use the password you set in `.env` (`APP_PASSWORD`)
+On first launch, you'll be prompted to create the initial super admin user:
+- Choose a username
+- Set a strong password
+- This user has full system access
 
-### 2. Add Your First Blog
+### 2. Add WordPress Blogs
 
-1. Click **"⚙️ Manage Blogs"** in the navigation
-2. Click **"+ Add New Blog"**
-3. Fill in the details:
+1. Log in as super admin
+2. Click **"⚙️ Manage Blogs"** in the navigation
+3. Click **"+ Add New Blog"**
+4. Fill in the details:
    - **Blog Name**: Your blog name
    - **WordPress URL**: https://yourblog.com (no trailing slash)
    - **Username**: Your WordPress username
@@ -89,12 +97,19 @@ Use the password you set in `.env` (`APP_PASSWORD`)
    - **Keywords**: SEO keywords
    - **CTA**: Call-to-action text
 
+### 3. Create Additional Users (Optional)
+
+1. Click **"👥 Manage Users"** (super admin only)
+2. Click **"+ Add New User"**
+3. Set username, password, and role
+4. Assign blogs to the user
+
 ### Getting WordPress Application Password
 
 1. Log into your WordPress admin panel
 2. Go to **Users** → **Profile**
 3. Scroll to **"Application Passwords"**
-4. Enter name: "Blog Manager App"
+4. Enter name: "The Blogger"
 5. Click **"Add New Application Password"**
 6. **Copy the password** (format: `xxxx xxxx xxxx xxxx xxxx xxxx`)
 7. Paste it in the "Add Blog" form
@@ -103,16 +118,33 @@ Use the password you set in `.env` (`APP_PASSWORD`)
 
 ### Creating a Blog Post
 
-1. **Select Blog** - Click on a blog card from the dashboard
-2. **Brainstorm** - Enter:
-   - Topic (e.g., "10 Ways to Grow Your Business")
-   - Angle (How-to, Listicle, Case Study, etc.)
-   - Audience (Who is this for?)
-   - Tone (Professional, Friendly, Casual, etc.)
-3. **Review Outline** - AI generates article structure
-4. **Generate Article** - Full 850+ word article created with SEO optimization
-5. **Select Images** - AI picks 4+ relevant images from Unsplash
-6. **Publish** - Creates WordPress draft (or publish immediately)
+The 5-step workflow takes you through dedicated pages:
+
+1. **Brainstorm** (create-brainstorm.html)
+   - Select a blog from the dashboard
+   - Enter topic, angle, audience, and tone
+   - Brief is saved to proceed to next step
+
+2. **Review Outline** (create-outline.html)
+   - AI generates structured article outline
+   - Headline, introduction, sections, and CTA
+   - Can regenerate if needed
+
+3. **Review Article** (create-article.html)
+   - Full 1200+ word article generated
+   - View word count and preview
+   - SEO-optimized with proper heading structure
+
+4. **Select Images** (create-images.html)
+   - **Option A**: AI-selected images from Unsplash (6 candidates)
+   - **Option B**: Upload your own (featured + inline images)
+   - Preview all images before proceeding
+
+5. **Publish** (create-publish.html)
+   - **Save as Draft** - Review in WordPress first
+   - **Publish Immediately** - Goes live right away
+   - **Schedule for Later** - Pick date/time to publish
+   - Clear success message with WordPress links
 
 ### Managing Blogs
 
@@ -126,13 +158,10 @@ Use the password you set in `.env` (`APP_PASSWORD`)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `APP_PASSWORD` | Master password for the app | Required |
-| `SESSION_SECRET` | Secret for session encryption | Required |
-| `OPENAI_API_KEY` | OpenAI API key | Required |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API key | Required |
 | `UNSPLASH_ACCESS_KEY` | Unsplash API access key | Required |
-| `PORT` | Server port | 12800 |
-| `MIN_IMAGES_PER_POST` | Minimum images per article | 4 |
-| `MIN_WORD_COUNT` | Minimum article word count | 850 |
+| `SESSION_SECRET` | Secret for session encryption | Required |
+| `PORT` | Server port | 3000 |
 
 ### Blog Configuration (`blogs.json`)
 
@@ -170,41 +199,65 @@ npx ngrok http 12800
 ## Project Structure
 
 ```
-blog-manager-app/
-├── server.js                  # Express server
-├── package.json               # Dependencies
-├── .env                       # Configuration (not in git)
-├── blogs.json                 # Blog list (not in git)
-├── .gitignore                # Git ignore rules
+Blog Manager App/
+├── server.js                    # Express server & API endpoints
+├── package.json                 # Dependencies
+├── .env                         # Configuration (not in git)
+├── .gitignore                  # Git ignore rules
+├── blogs.json                  # Blog configurations (not in git)
+├── users.json                  # User database (not in git)
+├── uploads/                    # User-uploaded images (not in git)
 ├── config/
-│   └── brand-voice.json      # Default brand voice
+│   └── brand-voice.json        # Default brand voice
 ├── public/
-│   ├── index.html            # Dashboard
-│   ├── create.html           # Blog creation interface
-│   ├── admin.html            # Blog management
-│   ├── style.css             # Styling
-│   └── app.js                # Frontend JavaScript
+│   ├── index.html              # Login & Dashboard
+│   ├── admin.html              # Blog management
+│   ├── users.html              # User management
+│   ├── create-brainstorm.html  # Step 1: Brainstorming
+│   ├── create-outline.html     # Step 2: Outline review
+│   ├── create-article.html     # Step 3: Article generation
+│   ├── create-images.html      # Step 4: Image selection/upload
+│   ├── create-publish.html     # Step 5: Publishing options
+│   ├── style.css               # Main styles
+│   ├── style-improvements.css  # UI enhancements
+│   └── logo.png                # App logo
 └── src/
-    ├── outlineGenerator.js   # Article outline creation
-    ├── articleWriter.js      # Full article generation
-    ├── imageSelector.js      # AI image selection
-    ├── wordpressPublisher.js # WordPress integration
+    ├── outlineGenerator.js     # Article outline creation
+    ├── articleWriter.js        # Full article generation
+    ├── imageSelector.js        # AI image selection
+    ├── wordpressPublisher.js   # WordPress integration
     └── utils/
-        ├── anthropic.js      # OpenAI API wrapper
-        ├── unsplash.js       # Unsplash API wrapper
-        └── prompts.js        # AI prompt templates
+        ├── anthropic.js        # Claude API wrapper
+        ├── unsplash.js         # Unsplash API wrapper
+        └── prompts.js          # AI prompt templates
 ```
 
 ## API Endpoints
 
+### Authentication
 - `POST /api/login` - Authenticate user
-- `GET /api/blogs` - List all blogs
-- `POST /api/blogs` - Add new blog
-- `PUT /api/blogs/:id` - Update blog
-- `DELETE /api/blogs/:id` - Delete blog
+- `POST /api/logout` - End user session
+- `GET /api/auth-status` - Check authentication status
+- `GET /api/can-manage-blogs` - Check blog management permission
+
+### User Management
+- `GET /api/users` - List all users (super admin only)
+- `POST /api/users` - Create new user (super admin only)
+- `PUT /api/users/:id` - Update user (super admin only)
+- `DELETE /api/users/:id` - Delete user (super admin only)
+
+### Blog Management
+- `GET /api/blogs` - List accessible blogs
+- `POST /api/blogs` - Add new blog (admin/super admin)
+- `PUT /api/blogs/:id` - Update blog (admin/super admin)
+- `DELETE /api/blogs/:id` - Delete blog (admin/super admin)
+
+### Content Creation
 - `POST /api/outline` - Generate article outline
 - `POST /api/article` - Generate full article
-- `POST /api/images` - Select images
+- `POST /api/featured-candidates` - Get AI-selected image options
+- `POST /api/images` - Process selected images
+- `POST /api/upload-images` - Upload custom images
 - `POST /api/publish` - Publish to WordPress
 
 ## Troubleshooting
@@ -217,9 +270,10 @@ blog-manager-app/
 
 ### Login Not Working
 
-- Verify `APP_PASSWORD` in `.env`
-- Clear browser cookies
+- Verify username and password are correct
+- Clear browser cookies and sessions
 - Try incognito/private window
+- Check `users.json` exists and contains user data
 
 ### WordPress Publishing Fails
 
@@ -236,16 +290,20 @@ blog-manager-app/
 
 ### Article Generation Errors
 
-- Check OpenAI API key is valid and has credits
+- Check Anthropic API key is valid and has credits
 - Verify `config/brand-voice.json` exists
 - Check server console for detailed errors
+- Ensure blog configuration has proper brand voice settings
 
 ## Security Notes
 
-- **Never commit `.env`** - Contains API keys and passwords
+- **Never commit `.env`** - Contains API keys
 - **Never commit `blogs.json`** - Contains WordPress credentials
-- Change default `APP_PASSWORD` immediately
+- **Never commit `users.json`** - Contains user password hashes
+- **Never commit `uploads/`** - Contains user-uploaded images
+- Use strong passwords for all user accounts
 - Use strong WordPress Application Passwords
+- User passwords are hashed with bcrypt before storage
 - For production: Use HTTPS and set `secure: true` in session config
 - Keep dependencies updated: `npm audit fix`
 
@@ -269,14 +327,23 @@ blog-manager-app/
 6. **Use Keywords** - Add relevant SEO keywords to blog settings
 7. **Consistent Voice** - Set appropriate tone for each blog
 
+## User Roles & Permissions
+
+| Role | Permissions |
+|------|-------------|
+| **super_admin** | Full system access, manage all users and blogs, create admins |
+| **admin** | Manage assigned blogs, create/edit editors, create blog posts |
+| **editor** | Create and publish blog posts for assigned blogs only |
+
 ## Tech Stack
 
 - **Backend**: Node.js, Express.js
-- **AI**: OpenAI GPT-4
+- **AI**: Anthropic Claude API (Sonnet 4.5)
 - **Images**: Unsplash API
 - **CMS**: WordPress REST API
+- **File Uploads**: Multer
+- **Auth**: express-session + bcrypt
 - **Frontend**: Vanilla JavaScript, CSS
-- **Session**: express-session
 
 ## Contributing
 
