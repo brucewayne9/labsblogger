@@ -40,6 +40,17 @@
             </button>
         </div>
 
+        <div id="apiSourceToggle" class="api-source-toggle">
+            <label class="api-source-label">
+                <input type="radio" name="imageApi" value="unsplash" checked onchange="switchImageAPI()">
+                <span>Unsplash</span>
+            </label>
+            <label class="api-source-label">
+                <input type="radio" name="imageApi" value="pexels" onchange="switchImageAPI()">
+                <span>Pexels</span>
+            </label>
+        </div>
+
         <div id="aiImagesSection">
             <div id="featuredCandidates">
                 <div class="loader">Finding image options...</div>
@@ -96,6 +107,7 @@
         let selectedFeaturedId = null;
         let uploadedFeatured = null;
         let uploadedInline = [];
+        let currentImageAPI = 'unsplash'; // Default to Unsplash
 
         async function logout() {
             await fetch('/api/logout', { method: 'POST' });
@@ -111,11 +123,19 @@
             await loadFeaturedCandidates();
         }
 
+        function switchImageAPI() {
+            const selectedAPI = document.querySelector('input[name="imageApi"]:checked').value;
+            currentImageAPI = selectedAPI;
+            console.log('Switched to:', currentImageAPI);
+            // Reload candidates with new API
+            loadFeaturedCandidates();
+        }
+
         async function loadFeaturedCandidates() {
             const response = await fetch('/api/featured-candidates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ article, brief })
+                body: JSON.stringify({ article, brief, imageSource: currentImageAPI })
             });
 
             if (!response.ok) {
@@ -164,7 +184,7 @@
             const response = await fetch('/api/images', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ article, brief, selectedFeaturedId })
+                body: JSON.stringify({ article, brief, selectedFeaturedId, imageSource: currentImageAPI })
             });
 
             if (response.ok) {
@@ -183,6 +203,7 @@
             document.getElementById('uploadImagesSection').classList.add('hidden');
             document.getElementById('aiImagesBtn').classList.add('active');
             document.getElementById('uploadImagesBtn').classList.remove('active');
+            document.getElementById('apiSourceToggle').style.display = 'flex';
         }
 
         function showUploadImages() {
@@ -190,6 +211,7 @@
             document.getElementById('uploadImagesSection').classList.remove('hidden');
             document.getElementById('aiImagesBtn').classList.remove('active');
             document.getElementById('uploadImagesBtn').classList.add('active');
+            document.getElementById('apiSourceToggle').style.display = 'none';
         }
 
         function handleFeaturedUpload(event) {

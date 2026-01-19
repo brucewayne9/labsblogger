@@ -324,3 +324,42 @@
     font-size: 1.1rem !important;
     color: var(--gray-text) !important;
 }
+
+/* API Source Toggle */
+.api-source-toggle {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 1.5rem !important;
+    margin: 1.5rem auto !important;
+    padding: 1rem !important;
+    background: var(--mid-gray) !important;
+    border-radius: 12px !important;
+    max-width: 400px !important;
+}
+
+.api-source-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+}
+
+.api-source-label:hover {
+    background: rgba(255, 107, 53, 0.1) !important;
+}
+
+.api-source-label input[type="radio"] {
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer !important;
+    accent-color: var(--orange) !important;
+}
+
+.api-source-label span {
+    font-size: 1rem !important;
+    color: var(--white) !important;
+}

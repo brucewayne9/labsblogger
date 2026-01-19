@@ -1,12 +1,14 @@
 import chalk from 'chalk';
 import ora from 'ora';
-import { searchPhotos, triggerDownload } from './utils/unsplash.js';
+import * as unsplash from './utils/unsplash.js';
+import * as pexels from './utils/pexels.js';
 import { callClaude } from './utils/anthropic.js';
 import { IMAGE_SELECTION_PROMPT } from './utils/prompts.js';
 
 // Get featured image candidates for user selection
-export async function getFeaturedImageCandidates(article, brief) {
-  console.log(chalk.cyan('\n🖼️  Finding featured image candidates...\n'));
+export async function getFeaturedImageCandidates(article, brief, imageSource = 'unsplash') {
+  const sourceName = imageSource === 'pexels' ? 'Pexels' : 'Unsplash';
+  console.log(chalk.cyan(`\n🖼️  Finding featured image candidates from ${sourceName}...\n`));
 
   const featuredPlacement = article.imagePlacements.find(p => p.position === 'featured');
 
@@ -16,9 +18,11 @@ export async function getFeaturedImageCandidates(article, brief) {
 
   console.log(chalk.white(`  Query: "${featuredPlacement.searchQuery}"`));
 
-  const spinner = ora('Searching Unsplash...').start();
+  const spinner = ora(`Searching ${sourceName}...`).start();
 
-  const searchResult = await searchPhotos(featuredPlacement.searchQuery, {
+  // Choose API based on imageSource
+  const api = imageSource === 'pexels' ? pexels : unsplash;
+  const searchResult = await api.searchPhotos(featuredPlacement.searchQuery, {
     perPage: 6,
     orientation: 'landscape',
   });
@@ -36,13 +40,14 @@ export async function getFeaturedImageCandidates(article, brief) {
   const candidates = searchResult.results.map(photo => ({
     id: photo.id,
     url: photo.urls.regular,
-    thumbUrl: photo.urls.small,
+    thumbUrl: photo.urls.thumb || photo.urls.small,
     altText: featuredPlacement.altText || photo.alt_description || photo.description,
     description: photo.description || photo.alt_description || 'No description',
-    credit: `Photo by ${photo.user.name} on Unsplash`,
+    credit: `Photo by ${photo.user.name} on ${sourceName}`,
     creditLink: photo.user.links.html,
     photographerName: photo.user.name,
-    downloadLocation: photo.links.download_location,
+    downloadLocation: photo.links?.download_location,
+    source: imageSource,
   }));
 
   console.log(chalk.green(`\n✓ Found ${candidates.length} featured image candidates\n`));
@@ -51,16 +56,21 @@ export async function getFeaturedImageCandidates(article, brief) {
     success: true,
     candidates,
     placement: featuredPlacement,
+    source: imageSource,
   };
 }
 
 // Select images for article (with user-selected featured image)
-export async function selectImages(article, brief, selectedFeaturedId = null) {
-  console.log(chalk.cyan('\n🖼️  Finding images for your article...\n'));
+export async function selectImages(article, brief, selectedFeaturedId = null, imageSource = 'unsplash') {
+  const sourceName = imageSource === 'pexels' ? 'Pexels' : 'Unsplash';
+  console.log(chalk.cyan(`\n🖼️  Finding images for your article from ${sourceName}...\n`));
   console.log(chalk.gray('[ImageSelector] Debug: article.imagePlacements:', JSON.stringify(article.imagePlacements, null, 2)));
 
   const selectedImages = [];
   const usedImageIds = new Set(); // Track used image IDs to prevent duplicates
+
+  // Choose API based on imageSource
+  const api = imageSource === 'pexels' ? pexels : unsplash;
 
   for (let i = 0; i < article.imagePlacements.length; i++) {
     const placement = article.imagePlacements[i];
@@ -69,10 +79,10 @@ export async function selectImages(article, brief, selectedFeaturedId = null) {
     console.log(chalk.yellow(`\nSearching for image ${i + 1}/${article.imagePlacements.length}:`));
     console.log(chalk.white(`  Query: "${placement.searchQuery}"`));
 
-    const spinner = ora('Searching Unsplash...').start();
+    const spinner = ora(`Searching ${sourceName}...`).start();
 
-    // Search Unsplash
-    const searchResult = await searchPhotos(placement.searchQuery, {
+    // Search using selected API
+    const searchResult = await api.searchPhotos(placement.searchQuery, {
       perPage: 10,
       orientation: 'landscape',
     });
@@ -148,21 +158,24 @@ export async function selectImages(article, brief, selectedFeaturedId = null) {
     usedImageIds.add(selectedPhoto.id);
 
     console.log(chalk.green(`  ✓ Selected: ${selectedPhoto.description || selectedPhoto.alt_description || 'Image'}`));
-    console.log(chalk.gray(`    By ${selectedPhoto.user.name} on Unsplash`));
+    console.log(chalk.gray(`    By ${selectedPhoto.user.name} on ${sourceName}`));
 
-    // Trigger download tracking (required by Unsplash)
-    await triggerDownload(selectedPhoto.links.download_location);
+    // Trigger download tracking (required by Unsplash only)
+    if (imageSource === 'unsplash' && selectedPhoto.links?.download_location) {
+      await unsplash.triggerDownload(selectedPhoto.links.download_location);
+    }
 
     selectedImages.push({
       position: placement.position,
       url: selectedPhoto.urls.regular,
       altText: placement.altText || selectedPhoto.alt_description || selectedPhoto.description,
-      credit: `Photo by ${selectedPhoto.user.name} on Unsplash`,
+      credit: `Photo by ${selectedPhoto.user.name} on ${sourceName}`,
       creditLink: selectedPhoto.user.links.html,
       photographerName: selectedPhoto.user.name,
-      unsplashId: selectedPhoto.id,
-      downloadLocation: selectedPhoto.links.download_location,
+      imageId: selectedPhoto.id,
+      downloadLocation: selectedPhoto.links?.download_location,
       placeholder: placement.placeholder,
+      source: imageSource,
     });
   }
 
@@ -250,10 +263,11 @@ export function replaceImagePlaceholders(content, images) {
 
   for (const image of images) {
     if (image.placeholder && image.position !== 'featured') {
+      const sourceName = image.source === 'pexels' ? 'Pexels' : 'Unsplash';
       const imageHtml = `
 <figure class="wp-block-image">
   <img src="${image.url}" alt="${image.altText}" />
-  <figcaption>${image.credit} - <a href="${image.creditLink}" target="_blank" rel="noopener">View on Unsplash</a></figcaption>
+  <figcaption>${image.credit} - <a href="${image.creditLink}" target="_blank" rel="noopener">View on ${sourceName}</a></figcaption>
 </figure>`;
 
       updatedContent = updatedContent.replace(image.placeholder, imageHtml);

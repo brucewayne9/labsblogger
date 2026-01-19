@@ -353,18 +353,18 @@ app.post('/api/article', requireAuth, async (req, res) => {
 
 // Get featured image candidates
 app.post('/api/featured-candidates', requireAuth, async (req, res) => {
-  const { article, brief } = req.body;
+  const { article, brief, imageSource = 'unsplash' } = req.body;
 
   try {
-    console.log('[API] Getting featured image candidates...');
-    const result = await getFeaturedImageCandidates(article, brief);
+    console.log(`[API] Getting featured image candidates from ${imageSource}...`);
+    const result = await getFeaturedImageCandidates(article, brief, imageSource);
 
     if (!result.success) {
       return res.status(500).json({ error: result.error });
     }
 
     console.log('[API] Featured image candidates retrieved successfully');
-    res.json({ candidates: result.candidates });
+    res.json({ candidates: result.candidates, source: imageSource });
   } catch (error) {
     console.error('[API] Featured image candidates error:', error);
     res.status(500).json({ error: error.message });
@@ -434,11 +434,11 @@ app.post('/api/upload-images', requireAuth, upload.fields([
 
 // Select images
 app.post('/api/images', requireAuth, async (req, res) => {
-  const { article, brief, selectedFeaturedId } = req.body;
+  const { article, brief, selectedFeaturedId, imageSource = 'unsplash' } = req.body;
 
   try {
-    console.log('[API] Selecting images...');
-    const images = await selectImages(article, brief, selectedFeaturedId);
+    console.log(`[API] Selecting images from ${imageSource}...`);
+    const images = await selectImages(article, brief, selectedFeaturedId, imageSource);
     console.log('[API] Images selected successfully');
     res.json({ images });
   } catch (error) {
