@@ -10,7 +10,7 @@
   - Editor - Create and publish blog posts
 - **Multi-Blog Support** - Manage unlimited WordPress blogs from one dashboard
 - **AI-Powered Content** - Generate 1200+ word SEO-optimized articles with Claude Sonnet 4.5
-- **Dual Image Selection** - Choose AI-selected images from Unsplash OR upload your own
+- **Triple Image Source Options** - Choose AI-selected images from Unsplash OR Pexels, or upload your own custom images
 - **5-Step Creation Flow** - Each step on its own dedicated page
   1. Brainstorm (topic, angle, audience, tone)
   2. Review outline
@@ -27,8 +27,9 @@
 
 - Node.js v18 or higher
 - WordPress site(s) with REST API enabled
-- Anthropic Claude API key
-- Unsplash API key (free tier available)
+- Anthropic Claude API key ([Get it here](https://console.anthropic.com/))
+- Unsplash API key - Free tier available ([Get it here](https://unsplash.com/developers))
+- Pexels API key - Free unlimited requests ([Get it here](https://www.pexels.com/api/))
 
 ### Installation
 
@@ -52,6 +53,7 @@
    ```env
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
+   PEXELS_API_KEY=your_pexels_api_key_here
    SESSION_SECRET=random_session_secret_here
    PORT=3000
    ```
@@ -339,11 +341,269 @@ Blog Manager App/
 
 - **Backend**: Node.js, Express.js
 - **AI**: Anthropic Claude API (Sonnet 4.5)
-- **Images**: Unsplash API
+- **Images**: Unsplash API + Pexels API
 - **CMS**: WordPress REST API
 - **File Uploads**: Multer
 - **Auth**: express-session + bcrypt
 - **Frontend**: Vanilla JavaScript, CSS
+- **Security**: bcrypt password hashing, session encryption
+
+## Detailed Feature Breakdown
+
+### Multi-User System
+The app supports complete team collaboration with three role levels:
+- **Super Admins** can create other admins, manage all blogs, and have unrestricted access
+- **Admins** can manage specific blogs they're assigned to and create editors for those blogs
+- **Editors** can only create and publish content for blogs they have access to
+
+Each user has a secure login with bcrypt-hashed passwords and session-based authentication.
+
+### AI Content Generation
+Powered by **Claude Sonnet 4.5**, the most advanced AI model from Anthropic:
+- Generates SEO-optimized articles (1200-1800 words)
+- Creates structured outlines before full article generation
+- Maintains consistent brand voice across all content
+- Intelligently places images within article flow
+- Follows best practices for heading hierarchy (H2, H3)
+
+### Image Management
+Three flexible options for sourcing images:
+1. **Unsplash API** - Professional photography, 50+ images/hour free
+2. **Pexels API** - High-quality stock photos, unlimited requests free
+3. **Custom Uploads** - Upload your own images (featured + inline)
+
+AI automatically analyzes articles and selects the most relevant images. Users can toggle between Unsplash and Pexels with a single click.
+
+### WordPress Integration
+Direct integration with WordPress REST API:
+- Create drafts for review before publishing
+- Publish immediately to go live instantly
+- Schedule posts for future publication
+- Automatic image upload to WordPress media library
+- Proper attribution for stock photos in captions
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Frontend (Browser)                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Login &    │  │  Blog Create │  │    Admin     │      │
+│  │  Dashboard   │  │   Workflow   │  │    Panels    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ HTTP/JSON
+┌───────────────────────────┴─────────────────────────────────┐
+│                    Express.js Server (Node.js)               │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  Authentication Middleware (express-session + bcrypt)  │ │
+│  └────────────────────────────────────────────────────────┘ │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │   User   │  │   Blog   │  │ Content  │  │  Image   │   │
+│  │  Routes  │  │  Routes  │  │  Routes  │  │  Routes  │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────┬──────────┬──────────┬──────────┬────────────────────┘
+      │          │          │          │
+      ▼          ▼          ▼          ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│  Local   │ │ Claude   │ │WordPress │ │ Unsplash │
+│   JSON   │ │   API    │ │   REST   │ │  Pexels  │
+│  Storage │ │ (Sonnet) │ │   API    │ │   APIs   │
+└──────────┘ └──────────┘ └──────────┘ └──────────┘
+```
+
+### Data Flow
+
+1. **User Authentication** → Session stored in memory, user data in `users.json`
+2. **Blog Creation Workflow**:
+   - Step 1: User inputs topic/angle/audience → Stored in sessionStorage
+   - Step 2: Claude generates outline → Displayed for review
+   - Step 3: Claude generates full article → Preview shown
+   - Step 4: Images selected from Unsplash/Pexels or uploaded
+   - Step 5: Article + images published to WordPress
+3. **WordPress Publishing**:
+   - Images uploaded to WordPress media library
+   - Article content with embedded images created
+   - Post status set (draft/publish/scheduled)
+
+## API Integration Details
+
+### Anthropic Claude API
+- **Model**: claude-sonnet-4-5-20250514
+- **Purpose**: Content generation (outlines, articles, image selection)
+- **Rate Limits**: Varies by plan (check Anthropic console)
+- **Cost**: Pay-per-token (see Anthropic pricing)
+
+### Unsplash API
+- **Free Tier**: 50 requests/hour
+- **Purpose**: Stock photography search and download
+- **Attribution**: Required (automatically added to captions)
+- **Image Quality**: High-resolution professional photos
+
+### Pexels API
+- **Free Tier**: Unlimited requests (with proper attribution)
+- **Purpose**: Stock photography search and download
+- **Attribution**: Optional but recommended
+- **Image Quality**: High-resolution professional photos
+
+### WordPress REST API
+- **Authentication**: Application Password (recommended) or Basic Auth
+- **Endpoints Used**:
+  - `POST /wp-json/wp/v2/posts` - Create/update posts
+  - `POST /wp-json/wp/v2/media` - Upload images
+  - `GET /wp-json/wp/v2/categories` - Fetch categories
+  - `GET /wp-json/wp/v2/tags` - Fetch tags
+
+## Deployment Guide
+
+### Development
+```bash
+npm start
+```
+Runs on `http://localhost:3000` (or your configured PORT)
+
+### Production Deployment
+
+#### Option 1: Traditional VPS (DigitalOcean, Linode, AWS EC2)
+```bash
+# Install Node.js v18+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Clone and setup
+git clone https://github.com/brucewayne9/labsblogger.git
+cd labsblogger
+npm install --production
+
+# Set up environment
+cp .env.example .env
+nano .env  # Add your API keys
+
+# Initialize data files
+echo "[]" > blogs.json
+echo "[]" > users.json
+
+# Use PM2 for process management
+sudo npm install -g pm2
+pm2 start server.js --name "blog-manager"
+pm2 startup
+pm2 save
+
+# Setup nginx reverse proxy (optional but recommended)
+sudo apt install nginx
+# Configure nginx to proxy port 3000
+```
+
+#### Option 2: Docker
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+```bash
+docker build -t blog-manager .
+docker run -p 3000:3000 --env-file .env -v $(pwd)/blogs.json:/app/blogs.json -v $(pwd)/users.json:/app/users.json blog-manager
+```
+
+#### Option 3: Heroku
+```bash
+# Create Heroku app
+heroku create your-blog-manager
+
+# Set environment variables
+heroku config:set ANTHROPIC_API_KEY=your_key
+heroku config:set UNSPLASH_ACCESS_KEY=your_key
+heroku config:set PEXELS_API_KEY=your_key
+heroku config:set SESSION_SECRET=random_secret
+
+# Deploy
+git push heroku main
+```
+
+### Environment Variables for Production
+```env
+NODE_ENV=production
+PORT=3000
+SESSION_SECRET=long_random_secure_string_here
+ANTHROPIC_API_KEY=your_key
+UNSPLASH_ACCESS_KEY=your_key
+PEXELS_API_KEY=your_key
+```
+
+## Performance & Scaling
+
+### Performance Optimization Tips
+1. **Session Store**: In production, use Redis for session storage instead of in-memory
+   ```javascript
+   const RedisStore = require('connect-redis')(session);
+   app.use(session({
+     store: new RedisStore({ client: redisClient }),
+     // ...
+   }));
+   ```
+
+2. **Image Caching**: Cache image search results to reduce API calls
+3. **Rate Limiting**: Implement rate limiting for API endpoints
+4. **Database Migration**: Consider migrating from JSON files to MongoDB/PostgreSQL for better performance at scale
+
+### Scaling Considerations
+- **Current**: Single-server architecture, suitable for small teams (1-20 users)
+- **Medium Scale (20-100 users)**: Add load balancer, use Redis for sessions, separate database server
+- **Large Scale (100+ users)**: Containerize with Kubernetes, use managed databases, implement caching layer
+
+## Security Best Practices
+
+✅ **Implemented:**
+- Password hashing with bcrypt
+- Session-based authentication
+- Environment variables for secrets
+- .gitignore prevents committing sensitive data
+- WordPress Application Passwords (more secure than passwords)
+
+⚠️ **Recommended for Production:**
+- Enable HTTPS (use Let's Encrypt for free SSL)
+- Set secure session cookies: `cookie: { secure: true, httpOnly: true }`
+- Implement rate limiting to prevent brute force attacks
+- Regular dependency updates: `npm audit fix`
+- Use strong SESSION_SECRET (32+ random characters)
+- Restrict file upload types and sizes
+- Implement CSRF protection
+
+## Backup & Maintenance
+
+### What to Backup
+- `blogs.json` - Blog configurations and WordPress credentials
+- `users.json` - User accounts and permissions
+- `uploads/` - User-uploaded images
+- `.env` - Environment configuration (keep secure!)
+
+### Backup Script Example
+```bash
+#!/bin/bash
+BACKUP_DIR="/path/to/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+tar -czf "$BACKUP_DIR/blog-manager-$DATE.tar.gz" \
+  blogs.json \
+  users.json \
+  uploads/ \
+  .env
+
+# Keep only last 7 days of backups
+find $BACKUP_DIR -name "blog-manager-*.tar.gz" -mtime +7 -delete
+```
+
+### Maintenance Checklist
+- [ ] Weekly: Check logs for errors
+- [ ] Monthly: Update npm dependencies
+- [ ] Monthly: Review user access and remove inactive accounts
+- [ ] Quarterly: Backup configuration files
+- [ ] Quarterly: Review API usage and costs
 
 ## Contributing
 
