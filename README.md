@@ -9,7 +9,7 @@
   - Admin - Manage assigned blogs and users
   - Editor - Create and publish blog posts
 - **Multi-Blog Support** - Manage unlimited WordPress blogs from one dashboard
-- **AI-Powered Content** - Generate 1200+ word SEO-optimized articles with Claude Sonnet 4.5
+- **AI-Powered Content** - Generate 1200+ word SEO-optimized articles with OpenAI GPT-4o
 - **Triple Image Source Options** - Choose AI-selected images from Unsplash OR Pexels, or upload your own custom images
 - **5-Step Creation Flow** - Each step on its own dedicated page
   1. Brainstorm (topic, angle, audience, tone)
@@ -27,7 +27,7 @@
 
 - Node.js v18 or higher
 - WordPress site(s) with REST API enabled
-- Anthropic Claude API key ([Get it here](https://console.anthropic.com/))
+- OpenAI API key ([Get it here](https://platform.openai.com/api-keys))
 - Unsplash API key - Free tier available ([Get it here](https://unsplash.com/developers))
 - Pexels API key - Free unlimited requests ([Get it here](https://www.pexels.com/api/))
 
@@ -51,7 +51,7 @@
 
    Edit `.env` and add your API keys:
    ```env
-   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
    UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
    PEXELS_API_KEY=your_pexels_api_key_here
    SESSION_SECRET=random_session_secret_here
@@ -340,7 +340,7 @@ Blog Manager App/
 ## Tech Stack
 
 - **Backend**: Node.js, Express.js
-- **AI**: Anthropic Claude API (Sonnet 4.5)
+- **AI**: OpenAI API (GPT-4o model)
 - **Images**: Unsplash API + Pexels API
 - **CMS**: WordPress REST API
 - **File Uploads**: Multer
@@ -359,12 +359,13 @@ The app supports complete team collaboration with three role levels:
 Each user has a secure login with bcrypt-hashed passwords and session-based authentication.
 
 ### AI Content Generation
-Powered by **Claude Sonnet 4.5**, the most advanced AI model from Anthropic:
+Powered by **OpenAI GPT-4o**, OpenAI's most advanced multimodal model:
 - Generates SEO-optimized articles (1200-1800 words)
 - Creates structured outlines before full article generation
 - Maintains consistent brand voice across all content
 - Intelligently places images within article flow
 - Follows best practices for heading hierarchy (H2, H3)
+- Fast response times with high-quality output
 
 ### Image Management
 Three flexible options for sourcing images:
@@ -406,9 +407,9 @@ Direct integration with WordPress REST API:
       │          │          │          │
       ▼          ▼          ▼          ▼
 ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-│  Local   │ │ Claude   │ │WordPress │ │ Unsplash │
+│  Local   │ │  OpenAI  │ │WordPress │ │ Unsplash │
 │   JSON   │ │   API    │ │   REST   │ │  Pexels  │
-│  Storage │ │ (Sonnet) │ │   API    │ │   APIs   │
+│  Storage │ │ (GPT-4o) │ │   API    │ │   APIs   │
 └──────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -417,8 +418,8 @@ Direct integration with WordPress REST API:
 1. **User Authentication** → Session stored in memory, user data in `users.json`
 2. **Blog Creation Workflow**:
    - Step 1: User inputs topic/angle/audience → Stored in sessionStorage
-   - Step 2: Claude generates outline → Displayed for review
-   - Step 3: Claude generates full article → Preview shown
+   - Step 2: GPT-4o generates outline → Displayed for review
+   - Step 3: GPT-4o generates full article → Preview shown
    - Step 4: Images selected from Unsplash/Pexels or uploaded
    - Step 5: Article + images published to WordPress
 3. **WordPress Publishing**:
@@ -428,11 +429,13 @@ Direct integration with WordPress REST API:
 
 ## API Integration Details
 
-### Anthropic Claude API
-- **Model**: claude-sonnet-4-5-20250514
+### OpenAI API
+- **Model**: gpt-4o (GPT-4 Omni)
 - **Purpose**: Content generation (outlines, articles, image selection)
-- **Rate Limits**: Varies by plan (check Anthropic console)
-- **Cost**: Pay-per-token (see Anthropic pricing)
+- **Rate Limits**: 10,000 requests/minute (Tier 5), varies by tier
+- **Cost**: $2.50 per million input tokens, $10.00 per million output tokens
+- **Max Tokens**: 4000 tokens per request (configurable)
+- **Temperature**: 0.7 (balanced creativity)
 
 ### Unsplash API
 - **Free Tier**: 50 requests/hour
@@ -516,7 +519,7 @@ docker run -p 3000:3000 --env-file .env -v $(pwd)/blogs.json:/app/blogs.json -v 
 heroku create your-blog-manager
 
 # Set environment variables
-heroku config:set ANTHROPIC_API_KEY=your_key
+heroku config:set OPENAI_API_KEY=your_key
 heroku config:set UNSPLASH_ACCESS_KEY=your_key
 heroku config:set PEXELS_API_KEY=your_key
 heroku config:set SESSION_SECRET=random_secret
@@ -530,7 +533,7 @@ git push heroku main
 NODE_ENV=production
 PORT=3000
 SESSION_SECRET=long_random_secure_string_here
-ANTHROPIC_API_KEY=your_key
+OPENAI_API_KEY=your_key
 UNSPLASH_ACCESS_KEY=your_key
 PEXELS_API_KEY=your_key
 ```
