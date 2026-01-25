@@ -1,57 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review your AI-generated blog post outline">
     <title>Outline - The Blogger</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Create Blog Post</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <h1 style="font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0;">Create Blog Post</h1>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="location.href='index.html'" class="btn btn-ghost btn-sm" aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button onclick="logout()" class="btn btn-secondary btn-sm" aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="progress-bar">
-            <div class="progress-step" data-step="1">1</div>
+    <!-- Main Content -->
+    <main class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 800px;">
+        <!-- Progress Bar -->
+        <div class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="1" aria-valuemax="5" aria-label="Step 2 of 5">
+            <div class="progress-step completed" data-step="1">1</div>
             <div class="progress-step active" data-step="2">2</div>
             <div class="progress-step" data-step="3">3</div>
             <div class="progress-step" data-step="4">4</div>
             <div class="progress-step" data-step="5">5</div>
         </div>
 
-        <h2>Review Article Outline</h2>
-        <p class="step-subtitle">Check the structure and flow of your article</p>
+        <!-- Page Header -->
+        <header style="text-align: center; margin-bottom: var(--space-8);">
+            <h2>Review Article Outline</h2>
+            <p style="font-size: var(--text-lg); color: var(--text-secondary); margin-top: var(--space-2);">
+                Check the structure and flow of your article
+            </p>
+        </header>
 
+        <!-- Outline Display -->
         <div id="outlineDisplay">
-            <div class="loader">Generating outline...</div>
+            <div class="loader" role="status" aria-live="polite">
+                <div class="spinner"></div>
+                <span>Generating outline...</span>
+            </div>
         </div>
 
+        <!-- Action Buttons -->
         <div class="button-group" id="outlineButtons" style="display: none;">
-            <button onclick="location.href='create-brainstorm.html'" class="btn-secondary">← Back</button>
-            <button onclick="generateArticle()" class="btn-primary">Generate Article →</button>
+            <button onclick="location.href='create-brainstorm.html'" class="btn btn-secondary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back</span>
+            </button>
+            <button onclick="generateArticle()" class="btn btn-primary">
+                <span>Generate Article</span>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
         </div>
-    </div>
+    </main>
 
     <script>
         let blogId = sessionStorage.getItem('selectedBlogId');
         let brief = JSON.parse(sessionStorage.getItem('brief') || '{}');
         let outline = null;
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
-        }
-
         async function init() {
+            // Check authentication
+            try {
+                const authResponse = await fetch('/api/auth-status');
+                const authData = await authResponse.json();
+
+                if (!authData.authenticated) {
+                    location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                location.href = 'index.html';
+                return;
+            }
+
+            // Check if required data exists
             if (!blogId || !brief.topic) {
                 location.href = 'create-brainstorm.html';
                 return;
@@ -60,59 +117,115 @@
             await generateOutline();
         }
 
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout failed:', error);
+            } finally {
+                location.href = 'index.html';
+            }
+        }
+
         async function generateOutline() {
-            const response = await fetch('/api/outline', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ blogId, brief })
-            });
+            try {
+                const response = await fetch('/api/outline', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ blogId, brief })
+                });
 
-            if (!response.ok) {
-                const error = await response.json();
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to generate outline');
+                }
+
+                const data = await response.json();
+                outline = data.outline;
+
+                if (!outline) {
+                    throw new Error('No outline received from server');
+                }
+
+                // Save outline to sessionStorage
+                sessionStorage.setItem('outline', JSON.stringify(outline));
+
+                // Display outline
+                displayOutline(outline);
+
+            } catch (error) {
+                console.error('Outline generation error:', error);
                 document.getElementById('outlineDisplay').innerHTML = `
-                    <div class="error-box">
-                        <h3>❌ Error generating outline</h3>
-                        <p>${error.error || 'Unknown error'}</p>
-                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
+                    <div class="error-box" role="alert">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--color-error-500);" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Error Generating Outline</h3>
+                        <p>${error.message}</p>
+                        <button onclick="generateOutline()" class="btn btn-primary" style="margin-top: var(--space-4);">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                            </svg>
+                            <span>Try Again</span>
+                        </button>
                     </div>
                 `;
-                return;
             }
+        }
 
-            const data = await response.json();
-            outline = data.outline;
+        function displayOutline(outline) {
+            const sectionsHTML = outline.sections.map(section => `
+                <li style="margin-bottom: var(--space-4);">
+                    <strong style="color: var(--text-primary); font-size: var(--text-lg);">${section.heading}</strong>
+                    <ul style="margin-top: var(--space-2); padding-left: var(--space-6); list-style-type: disc;">
+                        ${section.points.map(point => `
+                            <li style="color: var(--text-secondary); margin-bottom: var(--space-2); line-height: var(--leading-relaxed);">${point}</li>
+                        `).join('')}
+                    </ul>
+                </li>
+            `).join('');
 
-            if (!outline) {
-                document.getElementById('outlineDisplay').innerHTML = `
-                    <div class="error-box">
-                        <h3>❌ No outline received</h3>
-                        <p>The server didn't return an outline. Please try again.</p>
-                        <button onclick="generateOutline()" class="btn-primary">Try Again</button>
-                    </div>
-                `;
-                return;
-            }
-
-            // Save outline
-            sessionStorage.setItem('outline', JSON.stringify(outline));
-
-            // Display outline
             document.getElementById('outlineDisplay').innerHTML = `
                 <div class="outline-box">
-                    <h3>📌 ${outline.headline}</h3>
-                    <p><strong>Introduction:</strong> ${outline.introHook}</p>
-                    <h4>Sections:</h4>
-                    <ol>
-                        ${outline.sections.map(s => `
-                            <li>
-                                <strong>${s.heading}</strong>
-                                <ul>
-                                    ${s.points.map(p => `<li>${p}</li>`).join('')}
-                                </ul>
-                            </li>
-                        `).join('')}
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-6);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--brand);" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <div style="flex: 1;">
+                            <h3 style="margin-bottom: var(--space-2);">${outline.headline}</h3>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--surface-elevated); border-left: 4px solid var(--brand); padding: var(--space-4); border-radius: var(--radius-base); margin-bottom: var(--space-6);">
+                        <h4 style="font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--text-primary); margin-bottom: var(--space-2);">Introduction Hook</h4>
+                        <p style="color: var(--text-secondary); line-height: var(--leading-relaxed); margin: 0;">${outline.introHook}</p>
+                    </div>
+
+                    <h4 style="font-size: var(--text-lg); font-weight: var(--weight-semibold); color: var(--text-primary); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                        Article Sections
+                    </h4>
+                    <ol style="list-style-type: decimal; padding-left: var(--space-6); margin-bottom: var(--space-6);">
+                        ${sectionsHTML}
                     </ol>
-                    <p><strong>CTA:</strong> ${outline.cta}</p>
+
+                    <div style="background: var(--surface-elevated); border-left: 4px solid var(--accent); padding: var(--space-4); border-radius: var(--radius-base);">
+                        <h4 style="font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--text-primary); margin-bottom: var(--space-2);">Call to Action</h4>
+                        <p style="color: var(--text-secondary); line-height: var(--leading-relaxed); margin: 0;">${outline.cta}</p>
+                    </div>
                 </div>
             `;
 
@@ -123,6 +236,7 @@
             location.href = 'create-article.html';
         }
 
+        // Initialize page
         init();
     </script>
 </body>

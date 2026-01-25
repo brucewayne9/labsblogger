@@ -1,0 +1,156 @@
+<svg width="450" height="140" viewBox="0 0 450 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definitions for gradients and effects -->
+  <defs>
+    <!-- Gradient 1 - Teal Blue to Light Blue -->
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e81b0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#76b5c5;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradient 2 - Orange to Peach -->
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e28743;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eab676;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradient 3 - Deep Blue to Navy -->
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#063970;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#154c79;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradient 4 - Light Blue to Cream -->
+    <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#abdbe3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eeeee4;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Text gradient - Teal to Orange -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1e81b0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#e28743;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#873e23;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft shadow -->
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feFlood flood-color="#21130d" flood-opacity="0.2"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- GEOMETRIC LOGO ICON: Layered content blocks - BIGGER -->
+  <g transform="translate(20, 25) scale(1.3)">
+    <!-- Background glow effect -->
+    <rect x="8" y="8" width="64" height="64" rx="16" fill="url(#gradient1)" opacity="0.15" filter="url(#glow)"/>
+
+    <!-- Layer 3 (Back) - Light blue to cream -->
+    <g transform="translate(28, 18)" opacity="0.5">
+      <rect x="0" y="0" width="32" height="8" rx="2" fill="url(#gradient4)"/>
+      <rect x="0" y="12" width="24" height="4" rx="1" fill="#abdbe3" opacity="0.7"/>
+      <rect x="0" y="18" width="28" height="4" rx="1" fill="#abdbe3" opacity="0.7"/>
+    </g>
+
+    <!-- Layer 2 (Middle) - Orange to peach -->
+    <g transform="translate(20, 24)" opacity="0.7" filter="url(#softShadow)">
+      <rect x="0" y="0" width="40" height="10" rx="3" fill="url(#gradient2)"/>
+      <rect x="0" y="14" width="30" height="5" rx="1.5" fill="#eab676" opacity="0.8"/>
+      <rect x="0" y="22" width="35" height="5" rx="1.5" fill="#eab676" opacity="0.8"/>
+    </g>
+
+    <!-- Layer 1 (Front) - Teal blue gradient -->
+    <g transform="translate(12, 30)" filter="url(#softShadow)">
+      <!-- Main card -->
+      <rect x="0" y="0" width="56" height="14" rx="4" fill="url(#gradient1)"/>
+      <!-- Content lines inside card - deep navy -->
+      <rect x="6" y="18" width="42" height="6" rx="2" fill="url(#gradient3)" opacity="0.9"/>
+      <rect x="6" y="28" width="36" height="6" rx="2" fill="#063970" opacity="0.9"/>
+      <rect x="6" y="38" width="44" height="6" rx="2" fill="#154c79" opacity="0.9"/>
+    </g>
+
+    <!-- Modern accent dot (orange/brown accent) -->
+    <circle cx="72" cy="28" r="6" fill="#e28743" filter="url(#glow)"/>
+    <circle cx="72" cy="28" r="3" fill="#eeeee4" opacity="0.95"/>
+
+    <!-- Subtle tech-forward detail lines -->
+    <line x1="8" y1="12" x2="14" y2="12" stroke="#1e81b0" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+    <line x1="8" y1="18" x2="12" y2="18" stroke="#76b5c5" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  </g>
+
+  <!-- TEXT: STACKED BLOCK LAYOUT -->
+  <g transform="translate(145, 35)">
+    <!-- "THE" - BIG, ON TOP -->
+    <text x="0" y="0"
+          font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif"
+          font-size="52"
+          font-weight="900"
+          letter-spacing="-0.02em"
+          fill="url(#textGradient)">
+      THE
+    </text>
+
+    <!-- Text shadow for THE -->
+    <text x="1" y="1"
+          font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif"
+          font-size="52"
+          font-weight="900"
+          letter-spacing="-0.02em"
+          fill="#21130d"
+          opacity="0.12">
+      THE
+    </text>
+
+    <!-- "BLOGGER" - BIG, BELOW THE (tight spacing) -->
+    <g transform="translate(0, 55)">
+      <text x="0" y="0"
+            font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif"
+            font-size="52"
+            font-weight="900"
+            letter-spacing="-0.02em"
+            fill="url(#textGradient)">
+        BLOGGER
+      </text>
+
+      <!-- Text shadow for BLOGGER -->
+      <text x="1" y="1"
+            font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif"
+            font-size="52"
+            font-weight="900"
+            letter-spacing="-0.02em"
+            fill="#21130d"
+            opacity="0.12">
+        BLOGGER
+      </text>
+    </g>
+
+    <!-- TAGLINE: "AI Writing Assistant" - smaller, below -->
+    <g transform="translate(2, 75)">
+      <text x="0" y="0"
+            font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif"
+            font-size="10"
+            font-weight="600"
+            letter-spacing="0.1em"
+            fill="#873e23">
+        AI WRITING ASSISTANT
+      </text>
+    </g>
+  </g>
+
+  <!-- Decorative geometric accent - repositioned with custom color -->
+  <line x1="140" y1="70" x2="140" y2="80" stroke="#e28743" stroke-width="3" opacity="0.6" stroke-linecap="round"/>
+</svg>

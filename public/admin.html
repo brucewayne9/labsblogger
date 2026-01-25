@@ -1,75 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Blogs</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <meta name="description" content="Manage your WordPress blogs - The Blogger">
+    <title>Manage Blogs - The Blogger</title>
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Manage Blogs</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <span class="hide-mobile">Manage Blogs</span>
+            </div>
+
+            <div class="nav-buttons">
+                <button
+                    onclick="location.href='index.html'"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <button
+                    onclick="logout()"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="admin-header">
-            <h2>Your Blogs</h2>
-            <button onclick="showAddBlogForm()" class="btn-primary">+ Add New Blog</button>
-        </div>
+    <!-- Main Content -->
+    <main id="main-content" class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12);">
+        <header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8);">
+            <div>
+                <h1 class="gradient-text" style="margin-bottom: var(--space-2);">Your Blogs</h1>
+                <p style="color: var(--text-secondary); margin: 0;">Manage your WordPress blog connections</p>
+            </div>
+            <button
+                onclick="showAddBlogForm()"
+                class="btn btn-primary"
+                aria-label="Add new blog">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add New Blog</span>
+            </button>
+        </header>
 
-        <!-- Add/Edit Blog Form -->
-        <div id="blogForm" class="modal hidden">
-            <div class="modal-content">
+        <!-- Blogs List -->
+        <section id="blogsList" aria-label="Your blogs" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-6);">
+            <!-- Loading skeleton -->
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+        </section>
+    </main>
+
+    <!-- Add/Edit Blog Modal -->
+    <div id="blogModal" class="hidden">
+        <div class="modal-backdrop" onclick="closeForm(event)">
+            <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 640px;" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+                <button
+                    onclick="closeForm()"
+                    class="modal-close"
+                    aria-label="Close modal">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+
                 <div class="modal-header">
-                    <h3 id="formTitle">Add New Blog</h3>
-                    <button onclick="closeForm()" class="close-btn">×</button>
+                    <h2 id="modalTitle">Add New Blog</h2>
+                    <p style="color: var(--text-secondary); margin: 0;">Connect your WordPress blog</p>
                 </div>
 
                 <form id="addEditBlogForm">
                     <input type="hidden" id="editBlogId">
 
                     <div class="form-group">
-                        <label>Blog Name*</label>
-                        <input type="text" id="blogName" required placeholder="e.g., My Awesome Blog">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogName"
+                                placeholder="Blog Name"
+                                required
+                                aria-required="true">
+                            <label for="blogName">Blog Name *</label>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>WordPress URL*</label>
-                        <input type="url" id="blogUrl" required placeholder="https://yourblog.com">
+                        <div class="input-wrapper">
+                            <input
+                                type="url"
+                                id="blogUrl"
+                                placeholder="WordPress URL"
+                                required
+                                aria-required="true">
+                            <label for="blogUrl">WordPress URL *</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            e.g., https://yourblog.com
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label>WordPress Username*</label>
-                        <input type="text" id="blogUsername" required placeholder="admin">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogUsername"
+                                placeholder="WordPress Username"
+                                required
+                                aria-required="true"
+                                autocomplete="username">
+                            <label for="blogUsername">WordPress Username *</label>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>WordPress Application Password*</label>
-                        <input type="text" id="blogPassword" required placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
-                        <small>Create this in WordPress: Users → Profile → Application Passwords</small>
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogPassword"
+                                placeholder="Application Password"
+                                required
+                                aria-required="true"
+                                autocomplete="off">
+                            <label for="blogPassword">WordPress Application Password *</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            Create this in WordPress: Users → Profile → Application Passwords
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="blogDescription" rows="3" placeholder="Brief description of your blog"></textarea>
+                        <div class="input-wrapper">
+                            <textarea
+                                id="blogDescription"
+                                placeholder="Description"
+                                rows="3"
+                                style="min-height: 100px;"></textarea>
+                            <label for="blogDescription">Description</label>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Categories (comma-separated)</label>
-                        <input type="text" id="blogCategories" placeholder="Tech, Business, Marketing">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogCategories"
+                                placeholder="Categories">
+                            <label for="blogCategories">Categories (comma-separated)</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            e.g., Tech, Business, Marketing
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label>Tone</label>
-                        <select id="blogTone">
+                        <label for="blogTone" style="position: static; color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); margin-bottom: var(--space-2); display: block;">
+                            Tone
+                        </label>
+                        <select id="blogTone" aria-label="Select blog tone">
                             <option value="friendly-professional">Friendly & Professional</option>
                             <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
                             <option value="professional-authoritative">Professional & Authoritative</option>
@@ -78,164 +194,365 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Keywords (comma-separated)</label>
-                        <input type="text" id="blogKeywords" placeholder="SEO, marketing, growth">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogKeywords"
+                                placeholder="Keywords">
+                            <label for="blogKeywords">Keywords (comma-separated)</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            e.g., SEO, marketing, growth
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label>Call-to-Action</label>
-                        <input type="text" id="blogCTA" placeholder="Subscribe to our newsletter">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="blogCTA"
+                                placeholder="Call-to-Action">
+                            <label for="blogCTA">Call-to-Action</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            e.g., Subscribe to our newsletter
+                        </small>
                     </div>
 
-                    <div class="button-group">
-                        <button type="button" onclick="closeForm()" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Save Blog</button>
+                    <div class="modal-buttons">
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span>Save Blog</span>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- Blogs List -->
-        <div id="blogsList" class="admin-blogs-list">
-            <!-- Blogs will be loaded here -->
-        </div>
     </div>
+
+    <!-- Success/Error Alert (will be shown via JS) -->
+    <div id="alertContainer" style="position: fixed; top: var(--space-6); right: var(--space-6); z-index: var(--z-toast); max-width: 400px; display: none;"></div>
 
     <script>
         let editingBlogId = null;
 
         async function init() {
-            const authResponse = await fetch('/api/auth-status');
-            const authData = await authResponse.json();
+            try {
+                const authResponse = await fetch('/api/auth-status');
+                const authData = await authResponse.json();
 
-            if (!authData.authenticated) {
+                if (!authData.authenticated) {
+                    location.href = 'index.html';
+                    return;
+                }
+
+                loadBlogs();
+            } catch (error) {
+                console.error('Init failed:', error);
                 location.href = 'index.html';
-                return;
             }
-
-            loadBlogs();
         }
 
         async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                location.href = 'index.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                location.href = 'index.html';
+            }
         }
 
         async function loadBlogs() {
-            const response = await fetch('/api/blogs');
-            const blogs = await response.json();
-
-            // Get full blog data including passwords
-            const fullBlogsResponse = await Promise.all(
-                blogs.map(blog => fetch(`/api/blogs/${blog.id}`).then(r => r.json()))
-            );
-
             const blogsList = document.getElementById('blogsList');
-            blogsList.innerHTML = '';
 
-            fullBlogsResponse.forEach(blog => {
-                const card = document.createElement('div');
-                card.className = 'admin-blog-card';
-                card.innerHTML = `
-                    <div class="admin-blog-header">
-                        <h3>${blog.name}</h3>
-                        <div class="admin-blog-actions">
-                            <button onclick="editBlog('${blog.id}')" class="btn-edit">✏️ Edit</button>
-                            <button onclick="deleteBlog('${blog.id}')" class="btn-delete">🗑️ Delete</button>
+            try {
+                const response = await fetch('/api/blogs');
+                const blogs = await response.json();
+
+                // Get full blog data including passwords
+                const fullBlogsResponse = await Promise.all(
+                    blogs.map(blog => fetch(`/api/blogs/${blog.id}`).then(r => r.json()))
+                );
+
+                blogsList.innerHTML = '';
+
+                if (fullBlogsResponse.length === 0) {
+                    blogsList.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: var(--space-16) var(--space-8);">
+                            <svg width="120" height="120" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto var(--space-6); opacity: 0.3;">
+                                <circle cx="60" cy="60" r="50"></circle>
+                                <line x1="60" y1="35" x2="60" y2="60"></line>
+                                <line x1="60" y1="75" x2="60" y2="80"></line>
+                            </svg>
+                            <h3 style="color: var(--text-primary); margin-bottom: var(--space-3);">No Blogs Yet</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">
+                                Add your first WordPress blog to start creating content.
+                            </p>
+                            <button onclick="showAddBlogForm()" class="btn btn-primary">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Add Your First Blog</span>
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                fullBlogsResponse.forEach(blog => {
+                    const card = document.createElement('article');
+                    card.className = 'card';
+                    card.style.cssText = 'display: flex; flex-direction: column; gap: var(--space-4); cursor: default;';
+                    card.setAttribute('aria-label', `Blog: ${blog.name}`);
+
+                    const categoriesHTML = blog.categories && blog.categories.length > 0
+                        ? `<div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: auto;">
+                            ${blog.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                           </div>`
+                        : '';
+
+                    card.innerHTML = `
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+                            <div style="flex: 1; min-width: 0;">
+                                <h3 style="font-size: var(--text-xl); margin-bottom: var(--space-2); color: var(--text-primary);">${blog.name}</h3>
+                                <a href="${blog.url}" target="_blank" rel="noopener noreferrer" style="font-size: var(--text-sm); color: var(--brand); word-break: break-all;">
+                                    ${blog.url}
+                                </a>
+                            </div>
+                            <div style="display: flex; gap: var(--space-2);">
+                                <button
+                                    onclick="editBlog('${blog.id}')"
+                                    class="btn-icon"
+                                    aria-label="Edit blog ${blog.name}"
+                                    title="Edit">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button
+                                    onclick="deleteBlog('${blog.id}')"
+                                    class="btn-icon"
+                                    style="border-color: var(--color-error-500); color: var(--color-error-500);"
+                                    onmouseover="this.style.background='var(--color-error-500)'; this.style.color='white';"
+                                    onmouseout="this.style.background='var(--surface-card)'; this.style.color='var(--color-error-500)';"
+                                    aria-label="Delete blog ${blog.name}"
+                                    title="Delete">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p style="color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0;">
+                            ${blog.description || 'No description provided'}
+                        </p>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-default);">
+                            <div>
+                                <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin: 0 0 var(--space-1) 0; font-weight: var(--weight-medium);">USERNAME</p>
+                                <p style="font-size: var(--text-sm); color: var(--text-primary); margin: 0;">${blog.username}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin: 0 0 var(--space-1) 0; font-weight: var(--weight-medium);">TONE</p>
+                                <p style="font-size: var(--text-sm); color: var(--text-primary); margin: 0;">${blog.brandVoice?.tone || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        ${categoriesHTML}
+                    `;
+
+                    blogsList.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Failed to load blogs:', error);
+                blogsList.innerHTML = `
+                    <div class="alert alert-error" style="grid-column: 1 / -1;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <div>
+                            <strong>Failed to load blogs</strong>
+                            <p style="margin: 0;">Please refresh the page or contact support.</p>
                         </div>
                     </div>
-                    <p class="blog-url">${blog.url}</p>
-                    <p>${blog.description || 'No description'}</p>
-                    <div class="blog-details">
-                        <p><strong>Username:</strong> ${blog.username}</p>
-                        <p><strong>Categories:</strong> ${blog.categories?.join(', ') || 'None'}</p>
-                        <p><strong>Tone:</strong> ${blog.brandVoice?.tone || 'N/A'}</p>
-                    </div>
                 `;
-                blogsList.appendChild(card);
-            });
+            }
         }
 
         function showAddBlogForm() {
             editingBlogId = null;
-            document.getElementById('formTitle').textContent = 'Add New Blog';
+            document.getElementById('modalTitle').textContent = 'Add New Blog';
             document.getElementById('addEditBlogForm').reset();
             document.getElementById('editBlogId').value = '';
-            document.getElementById('blogForm').classList.remove('hidden');
+            document.getElementById('blogModal').classList.remove('hidden');
+            // Focus first input for accessibility
+            setTimeout(() => document.getElementById('blogName').focus(), 100);
         }
 
         async function editBlog(blogId) {
-            const response = await fetch(`/api/blogs/${blogId}`);
-            const blog = await response.json();
+            try {
+                const response = await fetch(`/api/blogs/${blogId}`);
+                const blog = await response.json();
 
-            editingBlogId = blogId;
-            document.getElementById('formTitle').textContent = 'Edit Blog';
-            document.getElementById('editBlogId').value = blogId;
-            document.getElementById('blogName').value = blog.name;
-            document.getElementById('blogUrl').value = blog.url;
-            document.getElementById('blogUsername').value = blog.username;
-            document.getElementById('blogPassword').value = blog.appPassword;
-            document.getElementById('blogDescription').value = blog.description || '';
-            document.getElementById('blogCategories').value = blog.categories?.join(', ') || '';
-            document.getElementById('blogTone').value = blog.brandVoice?.tone || 'friendly-professional';
-            document.getElementById('blogKeywords').value = blog.brandVoice?.keywords?.join(', ') || '';
-            document.getElementById('blogCTA').value = blog.brandVoice?.cta || '';
+                editingBlogId = blogId;
+                document.getElementById('modalTitle').textContent = 'Edit Blog';
+                document.getElementById('editBlogId').value = blogId;
+                document.getElementById('blogName').value = blog.name;
+                document.getElementById('blogUrl').value = blog.url;
+                document.getElementById('blogUsername').value = blog.username;
+                document.getElementById('blogPassword').value = blog.appPassword;
+                document.getElementById('blogDescription').value = blog.description || '';
+                document.getElementById('blogCategories').value = blog.categories?.join(', ') || '';
+                document.getElementById('blogTone').value = blog.brandVoice?.tone || 'friendly-professional';
+                document.getElementById('blogKeywords').value = blog.brandVoice?.keywords?.join(', ') || '';
+                document.getElementById('blogCTA').value = blog.brandVoice?.cta || '';
 
-            document.getElementById('blogForm').classList.remove('hidden');
+                document.getElementById('blogModal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('blogName').focus(), 100);
+            } catch (error) {
+                console.error('Failed to load blog:', error);
+                showAlert('Failed to load blog details', 'error');
+            }
         }
 
         async function deleteBlog(blogId) {
-            if (!confirm('Are you sure you want to delete this blog?')) {
+            if (!confirm('Are you sure you want to delete this blog? This action cannot be undone.')) {
                 return;
             }
 
-            await fetch(`/api/blogs/${blogId}`, { method: 'DELETE' });
-            loadBlogs();
+            try {
+                const response = await fetch(`/api/blogs/${blogId}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    showAlert('Blog deleted successfully', 'success');
+                    loadBlogs();
+                } else {
+                    throw new Error('Delete failed');
+                }
+            } catch (error) {
+                console.error('Failed to delete blog:', error);
+                showAlert('Failed to delete blog', 'error');
+            }
         }
 
-        function closeForm() {
-            document.getElementById('blogForm').classList.add('hidden');
+        function closeForm(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            document.getElementById('blogModal').classList.add('hidden');
             document.getElementById('addEditBlogForm').reset();
             editingBlogId = null;
         }
 
+        // Form submit handler
         document.getElementById('addEditBlogForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const blogData = {
-                name: document.getElementById('blogName').value,
-                url: document.getElementById('blogUrl').value,
-                username: document.getElementById('blogUsername').value,
-                appPassword: document.getElementById('blogPassword').value,
-                description: document.getElementById('blogDescription').value,
-                categories: document.getElementById('blogCategories').value.split(',').map(c => c.trim()).filter(c => c),
-                tone: document.getElementById('blogTone').value,
-                keywords: document.getElementById('blogKeywords').value.split(',').map(k => k.trim()).filter(k => k),
-                cta: document.getElementById('blogCTA').value
-            };
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div><span>Saving...</span>';
 
-            const blogId = document.getElementById('editBlogId').value;
+            try {
+                const blogData = {
+                    name: document.getElementById('blogName').value,
+                    url: document.getElementById('blogUrl').value,
+                    username: document.getElementById('blogUsername').value,
+                    appPassword: document.getElementById('blogPassword').value,
+                    description: document.getElementById('blogDescription').value,
+                    categories: document.getElementById('blogCategories').value.split(',').map(c => c.trim()).filter(c => c),
+                    tone: document.getElementById('blogTone').value,
+                    keywords: document.getElementById('blogKeywords').value.split(',').map(k => k.trim()).filter(k => k),
+                    cta: document.getElementById('blogCTA').value
+                };
 
-            if (blogId) {
-                // Update existing blog
-                await fetch(`/api/blogs/${blogId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(blogData)
-                });
-            } else {
-                // Add new blog
-                await fetch('/api/blogs', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(blogData)
-                });
+                const blogId = document.getElementById('editBlogId').value;
+
+                let response;
+                if (blogId) {
+                    // Update existing blog
+                    response = await fetch(`/api/blogs/${blogId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(blogData)
+                    });
+                } else {
+                    // Add new blog
+                    response = await fetch('/api/blogs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(blogData)
+                    });
+                }
+
+                if (response.ok) {
+                    showAlert(blogId ? 'Blog updated successfully' : 'Blog added successfully', 'success');
+                    closeForm();
+                    loadBlogs();
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (error) {
+                console.error('Failed to save blog:', error);
+                showAlert('Failed to save blog', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Save Blog</span>';
             }
-
-            closeForm();
-            loadBlogs();
         });
 
+        // Alert helper function
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = 'animation: slideUp 0.3s ease-out;';
+
+            const icon = type === 'success'
+                ? '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+                : '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+            alertDiv.innerHTML = `
+                ${icon}
+                <div>
+                    <strong>${message}</strong>
+                </div>
+            `;
+
+            alertContainer.appendChild(alertDiv);
+            alertContainer.style.display = 'block';
+
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateX(100%)';
+                alertDiv.style.transition = 'all 0.3s ease-in';
+                setTimeout(() => {
+                    alertDiv.remove();
+                    if (alertContainer.children.length === 0) {
+                        alertContainer.style.display = 'none';
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('blogModal').classList.contains('hidden')) {
+                closeForm();
+            }
+        });
+
+        // Initialize on page load
         init();
     </script>
 </body>

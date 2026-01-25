@@ -1,45 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review your AI-generated blog article">
     <title>Article - The Blogger</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Create Blog Post</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <h1 style="font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0;">Create Blog Post</h1>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="location.href='index.html'" class="btn btn-ghost btn-sm" aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button onclick="logout()" class="btn btn-secondary btn-sm" aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="progress-bar">
-            <div class="progress-step" data-step="1">1</div>
-            <div class="progress-step" data-step="2">2</div>
+    <!-- Main Content -->
+    <main class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 900px;">
+        <!-- Progress Bar -->
+        <div class="progress-bar" role="progressbar" aria-valuenow="3" aria-valuemin="1" aria-valuemax="5" aria-label="Step 3 of 5">
+            <div class="progress-step completed" data-step="1">1</div>
+            <div class="progress-step completed" data-step="2">2</div>
             <div class="progress-step active" data-step="3">3</div>
             <div class="progress-step" data-step="4">4</div>
             <div class="progress-step" data-step="5">5</div>
         </div>
 
-        <h2>Article Generated</h2>
-        <p class="step-subtitle">Your AI-written article is ready for review</p>
+        <!-- Page Header -->
+        <header style="text-align: center; margin-bottom: var(--space-8);">
+            <h2>Article Generated</h2>
+            <p style="font-size: var(--text-lg); color: var(--text-secondary); margin-top: var(--space-2);">
+                Your AI-written article is ready for review
+            </p>
+        </header>
 
+        <!-- Article Display -->
         <div id="articleDisplay">
-            <div class="loader">Writing article...</div>
+            <div class="loader" role="status" aria-live="polite">
+                <div class="spinner"></div>
+                <span>Writing article...</span>
+            </div>
         </div>
 
+        <!-- Action Buttons -->
         <div class="button-group" id="articleButtons" style="display: none;">
-            <button onclick="location.href='create-outline.html'" class="btn-secondary">← Back</button>
-            <button onclick="location.href='create-images.html'" class="btn-primary">Select Images →</button>
+            <button onclick="location.href='create-outline.html'" class="btn btn-secondary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back</span>
+            </button>
+            <button onclick="location.href='create-images.html'" class="btn btn-primary">
+                <span>Select Images</span>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
         </div>
-    </div>
+    </main>
 
     <script>
         let blogId = sessionStorage.getItem('selectedBlogId');
@@ -47,12 +93,23 @@
         let outline = JSON.parse(sessionStorage.getItem('outline') || '{}');
         let article = null;
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
-        }
-
         async function init() {
+            // Check authentication
+            try {
+                const authResponse = await fetch('/api/auth-status');
+                const authData = await authResponse.json();
+
+                if (!authData.authenticated) {
+                    location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                location.href = 'index.html';
+                return;
+            }
+
+            // Check if required data exists
             if (!blogId || !outline.headline) {
                 location.href = 'create-brainstorm.html';
                 return;
@@ -61,54 +118,180 @@
             await generateArticle();
         }
 
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout failed:', error);
+            } finally {
+                location.href = 'index.html';
+            }
+        }
+
         async function generateArticle() {
-            const response = await fetch('/api/article', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ blogId, outline, brief })
-            });
+            try {
+                const response = await fetch('/api/article', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ blogId, outline, brief })
+                });
 
-            if (!response.ok) {
-                const error = await response.json();
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to generate article');
+                }
+
+                const data = await response.json();
+                article = data.article;
+
+                if (!article) {
+                    throw new Error('No article received from server');
+                }
+
+                // Save article to sessionStorage
+                sessionStorage.setItem('article', JSON.stringify(article));
+
+                // Display article
+                displayArticle(article);
+
+            } catch (error) {
+                console.error('Article generation error:', error);
                 document.getElementById('articleDisplay').innerHTML = `
-                    <div class="error-box">
-                        <h3>❌ Error generating article</h3>
-                        <p>${error.error || 'Unknown error'}</p>
-                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
+                    <div class="error-box" role="alert">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--color-error-500);" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Error Generating Article</h3>
+                        <p>${error.message}</p>
+                        <button onclick="generateArticle()" class="btn btn-primary" style="margin-top: var(--space-4);">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                            </svg>
+                            <span>Try Again</span>
+                        </button>
                     </div>
                 `;
-                return;
             }
+        }
 
-            const data = await response.json();
-            article = data.article;
-
-            if (!article) {
-                document.getElementById('articleDisplay').innerHTML = `
-                    <div class="error-box">
-                        <h3>❌ No article received</h3>
-                        <p>The server didn't return an article. Please try again.</p>
-                        <button onclick="generateArticle()" class="btn-primary">Try Again</button>
-                    </div>
-                `;
-                return;
-            }
-
-            // Save article
-            sessionStorage.setItem('article', JSON.stringify(article));
-
-            // Display article preview
+        function displayArticle(article) {
             const wordCount = countWords(article.content);
+            const imageCount = article.imagePlacements?.length || 0;
+
+            // Create a preview of the article (first 800 characters)
+            const previewContent = article.content.substring(0, 800);
+            const hasMore = article.content.length > 800;
+
             document.getElementById('articleDisplay').innerHTML = `
                 <div class="article-box">
-                    <h3>${article.title}</h3>
-                    <p class="meta">Word Count: ~${wordCount} words</p>
-                    <p class="meta">Images: ${article.imagePlacements?.length || 0}</p>
-                    <div class="article-preview">${article.content.substring(0, 500)}...</div>
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-6);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--brand);" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="11" x2="8" y2="11"></line>
+                            <line x1="16" y1="15" x2="8" y2="15"></line>
+                            <line x1="16" y1="19" x2="8" y2="19"></line>
+                        </svg>
+                        <div style="flex: 1;">
+                            <h3 style="margin-bottom: var(--space-3);">${article.title}</h3>
+
+                            <div style="display: flex; gap: var(--space-6); flex-wrap: wrap; margin-bottom: var(--space-4);">
+                                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);" aria-hidden="true">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+                                        <strong style="color: var(--text-primary);">${wordCount}</strong> words
+                                    </span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);" aria-hidden="true">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                    <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+                                        <strong style="color: var(--text-primary);">${imageCount}</strong> image${imageCount !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--surface-elevated); border: 2px solid var(--border-default); border-radius: var(--radius-base); padding: var(--space-6); position: relative;">
+                        <div style="position: absolute; top: var(--space-4); right: var(--space-4);">
+                            <span style="display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius-full); font-size: var(--text-xs); color: var(--text-tertiary); font-weight: var(--weight-medium);">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                Preview
+                            </span>
+                        </div>
+
+                        <div style="font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--text-secondary);" id="articlePreviewContent">
+                            ${previewContent}${hasMore ? '<span style="color: var(--text-tertiary);">...</span>' : ''}
+                        </div>
+
+                        ${hasMore ? `
+                            <button onclick="toggleFullArticle()" id="toggleBtn" class="btn btn-ghost" style="margin-top: var(--space-4); width: 100%;">
+                                <span>Show Full Article</span>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div style="display: flex; gap: var(--space-3); margin-top: var(--space-6); padding: var(--space-4); background: var(--surface-elevated); border-radius: var(--radius-base); border-left: 4px solid var(--color-info-500);">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--color-info-500);" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: var(--leading-relaxed);">
+                            This article will be further edited in WordPress after publishing. Continue to select images for your post.
+                        </p>
+                    </div>
                 </div>
             `;
 
             document.getElementById('articleButtons').style.display = 'flex';
+        }
+
+        function toggleFullArticle() {
+            const previewContent = document.getElementById('articlePreviewContent');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const isExpanded = previewContent.dataset.expanded === 'true';
+
+            if (isExpanded) {
+                // Show preview
+                const preview = article.content.substring(0, 800);
+                previewContent.innerHTML = preview + '<span style="color: var(--text-tertiary);">...</span>';
+                previewContent.dataset.expanded = 'false';
+                toggleBtn.innerHTML = `
+                    <span>Show Full Article</span>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                `;
+            } else {
+                // Show full content
+                previewContent.innerHTML = article.content;
+                previewContent.dataset.expanded = 'true';
+                toggleBtn.innerHTML = `
+                    <span>Show Less</span>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                `;
+            }
         }
 
         function countWords(html) {
@@ -116,6 +299,7 @@
             return text.split(' ').length;
         }
 
+        // Initialize page
         init();
     </script>
 </body>

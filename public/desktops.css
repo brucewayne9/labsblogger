@@ -1,0 +1,243 @@
+/*
+ * THE BLOGGER - Desktop Color Palettes
+ * Multiple theme options using the custom color palette
+ * Colors: 1e81b0, eeeee4, e28743, eab676, 76b5c5, 21130d, 873e23, abdbe3, 063970, 154c79
+ */
+
+/* =============================================================================
+   DESKTOP 1: OCEAN (Blues & Teals - Cool & Professional)
+   ============================================================================= */
+[data-desktop="ocean"] {
+  --color-primary-500: #1E81B0;
+  --color-primary-400: #76B5C5;
+  --color-primary-300: #ABDBE3;
+  --color-primary-600: #154C79;
+  --color-primary-700: #063970;
+
+  --color-accent-500: #76B5C5;
+  --color-accent-400: #ABDBE3;
+  --color-accent-700: #154C79;
+
+  --surface-base: #063970;
+  --surface-elevated: #154C79;
+  --surface-card: #1E81B0;
+  --surface-card-hover: #76B5C5;
+
+  --text-primary: #EEEEE4;
+  --text-secondary: #ABDBE3;
+  --text-tertiary: #76B5C5;
+
+  --border-default: #154C79;
+  --border-subtle: #063970;
+
+  --brand: #1E81B0;
+  --brand-hover: #76B5C5;
+  --brand-active: #ABDBE3;
+
+  --gradient-primary: linear-gradient(135deg, #1E81B0 0%, #76B5C5 100%);
+  --gradient-vibrant: linear-gradient(135deg, #063970 0%, #1E81B0 50%, #ABDBE3 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(30, 129, 176, 0.25);
+  --shadow-primary-md: 0 8px 24px rgba(30, 129, 176, 0.3);
+  --shadow-primary-lg: 0 12px 32px rgba(30, 129, 176, 0.35);
+}
+
+/* =============================================================================
+   DESKTOP 2: SUNSET (Oranges & Browns - Warm & Creative)
+   ============================================================================= */
+[data-desktop="sunset"] {
+  --color-primary-500: #E28743;
+  --color-primary-400: #EAB676;
+  --color-primary-300: #EEEEE4;
+  --color-primary-600: #873E23;
+  --color-primary-700: #21130D;
+
+  --color-accent-500: #EAB676;
+  --color-accent-400: #EEEEE4;
+  --color-accent-700: #873E23;
+
+  --surface-base: #21130D;
+  --surface-elevated: #873E23;
+  --surface-card: #E28743;
+  --surface-card-hover: #EAB676;
+
+  --text-primary: #EEEEE4;
+  --text-secondary: #EAB676;
+  --text-tertiary: #E28743;
+
+  --border-default: #873E23;
+  --border-subtle: #21130D;
+
+  --brand: #E28743;
+  --brand-hover: #EAB676;
+  --brand-active: #EEEEE4;
+
+  --gradient-primary: linear-gradient(135deg, #E28743 0%, #EAB676 100%);
+  --gradient-vibrant: linear-gradient(135deg, #873E23 0%, #E28743 50%, #EEEEE4 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(226, 135, 67, 0.25);
+  --shadow-primary-md: 0 8px 24px rgba(226, 135, 67, 0.3);
+  --shadow-primary-lg: 0 12px 32px rgba(226, 135, 67, 0.35);
+}
+
+/* =============================================================================
+   DESKTOP 3: CLASSIC (Balanced Mix - Professional & Versatile)
+   ============================================================================= */
+[data-desktop="classic"] {
+  --color-primary-500: #1E81B0;
+  --color-primary-400: #76B5C5;
+  --color-primary-300: #ABDBE3;
+  --color-primary-600: #154C79;
+  --color-primary-700: #063970;
+
+  --color-accent-500: #E28743;
+  --color-accent-400: #EAB676;
+  --color-accent-700: #873E23;
+
+  --surface-base: #21130D;
+  --surface-elevated: #063970;
+  --surface-card: rgba(30, 129, 176, 0.1);
+  --surface-card-hover: rgba(30, 129, 176, 0.2);
+
+  --text-primary: #EEEEE4;
+  --text-secondary: #ABDBE3;
+  --text-tertiary: #76B5C5;
+
+  --border-default: #154C79;
+  --border-subtle: #063970;
+
+  --brand: #1E81B0;
+  --brand-hover: #76B5C5;
+  --brand-active: #ABDBE3;
+
+  --accent: #E28743;
+  --accent-hover: #EAB676;
+
+  --gradient-primary: linear-gradient(135deg, #1E81B0 0%, #76B5C5 100%);
+  --gradient-accent: linear-gradient(135deg, #E28743 0%, #EAB676 100%);
+  --gradient-vibrant: linear-gradient(135deg, #1E81B0 0%, #E28743 50%, #873E23 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(30, 129, 176, 0.25);
+  --shadow-primary-md: 0 8px 24px rgba(30, 129, 176, 0.3);
+  --shadow-primary-lg: 0 12px 32px rgba(30, 129, 176, 0.35);
+}
+
+/* =============================================================================
+   DESKTOP 4: MIDNIGHT (Dark Navy & Deep Blues - Sophisticated & Elegant)
+   ============================================================================= */
+[data-desktop="midnight"] {
+  --color-primary-500: #063970;
+  --color-primary-400: #154C79;
+  --color-primary-300: #1E81B0;
+  --color-primary-600: #21130D;
+  --color-primary-700: #21130D;
+
+  --color-accent-500: #1E81B0;
+  --color-accent-400: #76B5C5;
+  --color-accent-700: #063970;
+
+  --surface-base: #21130D;
+  --surface-elevated: #063970;
+  --surface-card: #154C79;
+  --surface-card-hover: #1E81B0;
+
+  --text-primary: #EEEEE4;
+  --text-secondary: #ABDBE3;
+  --text-tertiary: #76B5C5;
+
+  --border-default: #063970;
+  --border-subtle: #21130D;
+
+  --brand: #063970;
+  --brand-hover: #154C79;
+  --brand-active: #1E81B0;
+
+  --gradient-primary: linear-gradient(135deg, #063970 0%, #154C79 100%);
+  --gradient-vibrant: linear-gradient(135deg, #21130D 0%, #063970 50%, #1E81B0 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(6, 57, 112, 0.3);
+  --shadow-primary-md: 0 8px 24px rgba(6, 57, 112, 0.4);
+  --shadow-primary-lg: 0 12px 32px rgba(6, 57, 112, 0.5);
+}
+
+/* =============================================================================
+   DESKTOP 5: BREEZE (Light Blues & Cream - Fresh & Airy)
+   ============================================================================= */
+[data-desktop="breeze"] {
+  --color-primary-500: #76B5C5;
+  --color-primary-400: #ABDBE3;
+  --color-primary-300: #EEEEE4;
+  --color-primary-600: #1E81B0;
+  --color-primary-700: #154C79;
+
+  --color-accent-500: #ABDBE3;
+  --color-accent-400: #EEEEE4;
+  --color-accent-700: #76B5C5;
+
+  --surface-base: #EEEEE4;
+  --surface-elevated: #ABDBE3;
+  --surface-card: #76B5C5;
+  --surface-card-hover: #1E81B0;
+
+  --text-primary: #21130D;
+  --text-secondary: #063970;
+  --text-tertiary: #154C79;
+
+  --border-default: #ABDBE3;
+  --border-subtle: #EEEEE4;
+
+  --brand: #76B5C5;
+  --brand-hover: #1E81B0;
+  --brand-active: #154C79;
+
+  --gradient-primary: linear-gradient(135deg, #ABDBE3 0%, #76B5C5 100%);
+  --gradient-vibrant: linear-gradient(135deg, #EEEEE4 0%, #ABDBE3 50%, #76B5C5 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(118, 181, 197, 0.2);
+  --shadow-primary-md: 0 8px 24px rgba(118, 181, 197, 0.25);
+  --shadow-primary-lg: 0 12px 32px rgba(118, 181, 197, 0.3);
+
+  /* Light mode adjustments */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* =============================================================================
+   DESKTOP 6: EMBER (Warm Tones - Bold & Energetic)
+   ============================================================================= */
+[data-desktop="ember"] {
+  --color-primary-500: #873E23;
+  --color-primary-400: #E28743;
+  --color-primary-300: #EAB676;
+  --color-primary-600: #21130D;
+  --color-primary-700: #21130D;
+
+  --color-accent-500: #E28743;
+  --color-accent-400: #EAB676;
+  --color-accent-700: #873E23;
+
+  --surface-base: #21130D;
+  --surface-elevated: #873E23;
+  --surface-card: rgba(226, 135, 67, 0.15);
+  --surface-card-hover: rgba(226, 135, 67, 0.25);
+
+  --text-primary: #EEEEE4;
+  --text-secondary: #EAB676;
+  --text-tertiary: #E28743;
+
+  --border-default: #873E23;
+  --border-subtle: #21130D;
+
+  --brand: #873E23;
+  --brand-hover: #E28743;
+  --brand-active: #EAB676;
+
+  --gradient-primary: linear-gradient(135deg, #873E23 0%, #E28743 100%);
+  --gradient-vibrant: linear-gradient(135deg, #21130D 0%, #873E23 50%, #EAB676 100%);
+
+  --shadow-primary-sm: 0 4px 12px rgba(135, 62, 35, 0.3);
+  --shadow-primary-md: 0 8px 24px rgba(135, 62, 35, 0.35);
+  --shadow-primary-lg: 0 12px 32px rgba(135, 62, 35, 0.4);
+}

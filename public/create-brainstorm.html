@@ -1,26 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Brainstorm your blog post with AI assistance">
     <title>Brainstorm - The Blogger</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Create Blog Post</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <h1 style="font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0;">Create Blog Post</h1>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="location.href='index.html'" class="btn btn-ghost btn-sm" aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button onclick="logout()" class="btn btn-secondary btn-sm" aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="progress-bar">
+    <!-- Main Content -->
+    <main class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 800px;">
+        <!-- Progress Bar -->
+        <div class="progress-bar" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="5" aria-label="Step 1 of 5">
             <div class="progress-step active" data-step="1">1</div>
             <div class="progress-step" data-step="2">2</div>
             <div class="progress-step" data-step="3">3</div>
@@ -28,101 +52,229 @@
             <div class="progress-step" data-step="5">5</div>
         </div>
 
-        <h2>Brainstorm Your Blog Post</h2>
-        <p class="step-subtitle">Tell us what you want to write about and we'll help you create it</p>
+        <!-- Page Header -->
+        <header style="text-align: center; margin-bottom: var(--space-8);">
+            <h2>Brainstorm Your Blog Post</h2>
+            <p style="font-size: var(--text-lg); color: var(--text-secondary); margin-top: var(--space-2);">
+                Tell us what you want to write about and we'll help you create it
+            </p>
+        </header>
 
-        <div id="blogInfo" class="info-box"></div>
+        <!-- Blog Info -->
+        <div id="blogInfo" class="info-box" style="display: none;">
+            <!-- Blog info will be loaded here -->
+        </div>
 
+        <!-- Brainstorm Form -->
         <form id="brainstormForm">
+            <!-- Topic -->
             <div class="form-group">
-                <label>Topic</label>
-                <input type="text" id="topic" required placeholder="e.g., Ways to monetize your radio station">
+                <div class="input-wrapper">
+                    <input
+                        type="text"
+                        id="topic"
+                        placeholder="Ways to monetize your radio station"
+                        required
+                        aria-label="Blog post topic">
+                    <label for="topic">Topic *</label>
+                </div>
+                <small style="display: block; margin-top: var(--space-2); color: var(--text-tertiary); font-size: var(--text-sm);">
+                    What's the main subject of your blog post?
+                </small>
             </div>
 
+            <!-- Angle -->
             <div class="form-group">
-                <label>Angle</label>
-                <select id="angle" required>
-                    <option value="how-to-guide">How-to Guide</option>
-                    <option value="listicle">Listicle</option>
-                    <option value="case-study">Case Study</option>
-                    <option value="problem-solution">Problem/Solution</option>
-                    <option value="industry-trends">Industry Trends</option>
-                    <option value="feature-tutorial">Feature Tutorial</option>
-                </select>
+                <label for="angle" style="position: static; display: block; margin-bottom: var(--space-2); color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium);">
+                    Angle *
+                </label>
+                <div class="select-wrapper">
+                    <select id="angle" required aria-label="Content angle">
+                        <option value="how-to-guide">How-to Guide</option>
+                        <option value="listicle">Listicle</option>
+                        <option value="case-study">Case Study</option>
+                        <option value="problem-solution">Problem/Solution</option>
+                        <option value="industry-trends">Industry Trends</option>
+                        <option value="feature-tutorial">Feature Tutorial</option>
+                    </select>
+                </div>
+                <small style="display: block; margin-top: var(--space-2); color: var(--text-tertiary); font-size: var(--text-sm);">
+                    What format works best for your content?
+                </small>
             </div>
 
+            <!-- Target Audience -->
             <div class="form-group">
-                <label>Target Audience</label>
-                <input type="text" id="audience" required placeholder="e.g., Radio station owners">
+                <div class="input-wrapper">
+                    <input
+                        type="text"
+                        id="audience"
+                        placeholder="Radio station owners"
+                        required
+                        aria-label="Target audience">
+                    <label for="audience">Target Audience *</label>
+                </div>
+                <small style="display: block; margin-top: var(--space-2); color: var(--text-tertiary); font-size: var(--text-sm);">
+                    Who are you writing for?
+                </small>
             </div>
 
+            <!-- Tone -->
             <div class="form-group">
-                <label>Tone</label>
-                <select id="tone" required>
-                    <option value="friendly-conversational">Friendly & Conversational</option>
-                    <option value="professional-authoritative">Professional & Authoritative</option>
-                    <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
-                    <option value="educational-detailed">Educational & Detailed</option>
-                </select>
+                <label for="tone" style="position: static; display: block; margin-bottom: var(--space-2); color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium);">
+                    Tone *
+                </label>
+                <div class="select-wrapper">
+                    <select id="tone" required aria-label="Writing tone">
+                        <option value="friendly-conversational">Friendly & Conversational</option>
+                        <option value="professional-authoritative">Professional & Authoritative</option>
+                        <option value="passionate-knowledgeable">Passionate & Knowledgeable</option>
+                        <option value="educational-detailed">Educational & Detailed</option>
+                    </select>
+                </div>
+                <small style="display: block; margin-top: var(--space-2); color: var(--text-tertiary); font-size: var(--text-sm);">
+                    What voice should the article have?
+                </small>
             </div>
 
+            <!-- Submit Button -->
             <div class="button-group">
-                <button type="submit" class="btn-primary">Generate Outline →</button>
+                <button type="submit" class="btn btn-primary" style="min-width: 200px;">
+                    <span>Generate Outline</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
             </div>
         </form>
-    </div>
+    </main>
 
     <script>
         let blogId = sessionStorage.getItem('selectedBlogId');
         let currentBlog = null;
 
         async function init() {
-            const authResponse = await fetch('/api/auth-status');
-            const authData = await authResponse.json();
+            // Check authentication
+            try {
+                const authResponse = await fetch('/api/auth-status');
+                const authData = await authResponse.json();
 
-            if (!authData.authenticated) {
+                if (!authData.authenticated) {
+                    location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
                 location.href = 'index.html';
                 return;
             }
 
+            // Check if blog is selected
             if (!blogId) {
                 location.href = 'index.html';
                 return;
             }
 
-            const blogResponse = await fetch(`/api/blogs/${blogId}`);
-            currentBlog = await blogResponse.json();
+            // Load blog info
+            try {
+                const blogResponse = await fetch(`/api/blogs/${blogId}`);
+                if (!blogResponse.ok) {
+                    throw new Error('Blog not found');
+                }
 
-            document.getElementById('blogInfo').innerHTML = `
-                <h3>${currentBlog.name}</h3>
-                <p>${currentBlog.description}</p>
-                <p class="blog-url">${currentBlog.url}</p>
-            `;
+                currentBlog = await blogResponse.json();
+
+                const blogInfoDiv = document.getElementById('blogInfo');
+                blogInfoDiv.style.display = 'block';
+                blogInfoDiv.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-3);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--brand);" aria-hidden="true">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        <div style="flex: 1;">
+                            <h3 style="margin-bottom: var(--space-2);">${currentBlog.name}</h3>
+                            <p style="margin-bottom: var(--space-2); color: var(--text-secondary);">${currentBlog.description || 'No description'}</p>
+                            <a href="${currentBlog.url}" target="_blank" rel="noopener noreferrer" style="font-size: var(--text-sm); color: var(--brand); display: inline-flex; align-items: center; gap: var(--space-1);">
+                                ${currentBlog.url}
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load blog:', error);
+                alert('Failed to load blog information. Please go back and try again.');
+                location.href = 'index.html';
+            }
+
+            // Restore previous values if they exist
+            const savedBrief = sessionStorage.getItem('brief');
+            if (savedBrief) {
+                try {
+                    const brief = JSON.parse(savedBrief);
+                    document.getElementById('topic').value = brief.topic || '';
+                    document.getElementById('angle').value = brief.angle || 'how-to-guide';
+                    document.getElementById('audience').value = brief.audience || '';
+                    document.getElementById('tone').value = brief.tone || 'friendly-conversational';
+                } catch (error) {
+                    console.error('Failed to restore saved brief:', error);
+                }
+            }
         }
 
         async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout failed:', error);
+            } finally {
+                location.href = 'index.html';
+            }
         }
 
         document.getElementById('brainstormForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const brief = {
-                topic: document.getElementById('topic').value,
-                angle: document.getElementById('angle').value,
-                audience: document.getElementById('audience').value,
-                tone: document.getElementById('tone').value,
-                keyPoints: []
-            };
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalHTML = submitBtn.innerHTML;
 
-            // Save brief to sessionStorage
-            sessionStorage.setItem('brief', JSON.stringify(brief));
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div><span>Saving...</span>';
 
-            // Go to outline page
-            location.href = 'create-outline.html';
+            try {
+                const brief = {
+                    topic: document.getElementById('topic').value.trim(),
+                    angle: document.getElementById('angle').value,
+                    audience: document.getElementById('audience').value.trim(),
+                    tone: document.getElementById('tone').value,
+                    keyPoints: []
+                };
+
+                // Save brief to sessionStorage
+                sessionStorage.setItem('brief', JSON.stringify(brief));
+
+                // Small delay for UX (let user see the loading state)
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Go to outline page
+                location.href = 'create-outline.html';
+            } catch (error) {
+                console.error('Failed to save brief:', error);
+                alert('An error occurred. Please try again.');
+
+                // Restore button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHTML;
+            }
         });
 
+        // Initialize page
         init();
     </script>
 </body>

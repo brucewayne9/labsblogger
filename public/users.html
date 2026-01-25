@@ -1,130 +1,403 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage users - The Blogger">
     <title>Manage Users - The Blogger</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Manage Users</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <span class="hide-mobile">Manage Users</span>
+            </div>
+
+            <div class="nav-buttons">
+                <button
+                    onclick="location.href='index.html'"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <button
+                    onclick="logout()"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <button onclick="showAddUserForm()" class="btn-primary">+ Add New User</button>
+    <!-- Main Content -->
+    <main id="main-content" class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12);">
+        <header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8);">
+            <div>
+                <h1 class="gradient-text" style="margin-bottom: var(--space-2);">User Management</h1>
+                <p style="color: var(--text-secondary); margin: 0;">Manage user accounts and permissions</p>
+            </div>
+            <button
+                onclick="showAddUserForm()"
+                class="btn btn-primary"
+                aria-label="Add new user">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                <span>Add New User</span>
+            </button>
+        </header>
 
-        <div id="usersList" class="admin-list">
-            <!-- Users will be loaded here -->
-        </div>
-    </div>
+        <!-- Users List -->
+        <section id="usersList" aria-label="Users list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-6);">
+            <!-- Loading skeleton -->
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+        </section>
+    </main>
 
     <!-- Add/Edit User Modal -->
-    <div id="userModal" class="modal hidden">
-        <div class="modal-content">
-            <h2 id="modalTitle">Add User</h2>
-            <form id="userForm">
-                <label>Username:</label>
-                <input type="text" id="username" required>
+    <div id="userModal" class="hidden">
+        <div class="modal-backdrop" onclick="closeModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 560px;" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+                <button
+                    onclick="closeModal()"
+                    class="modal-close"
+                    aria-label="Close modal">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
 
-                <label>Password:</label>
-                <input type="password" id="password" required>
-
-                <label>Role:</label>
-                <select id="role">
-                    <option value="user">User (Access assigned blogs only)</option>
-                    <option value="admin">Admin (Manage all blogs)</option>
-                </select>
-
-                <label>Assigned Blogs:</label>
-                <div id="blogCheckboxes"></div>
-
-                <div class="modal-buttons">
-                    <button type="submit" class="btn-primary">Save</button>
-                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <div class="modal-header">
+                    <h2 id="modalTitle">Add User</h2>
+                    <p style="color: var(--text-secondary); margin: 0;">Create a new user account</p>
                 </div>
-            </form>
+
+                <form id="userForm">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Username"
+                                required
+                                aria-required="true"
+                                autocomplete="username">
+                            <label for="username">Username *</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Password"
+                                required
+                                aria-required="true"
+                                autocomplete="new-password">
+                            <label for="password">Password *</label>
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            Choose a strong password for this account
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role" style="position: static; color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); margin-bottom: var(--space-2); display: block;">
+                            Role *
+                        </label>
+                        <select id="role" required aria-label="Select user role">
+                            <option value="user">User (Access assigned blogs only)</option>
+                            <option value="admin">Admin (Manage all blogs)</option>
+                        </select>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            Admins can manage all blogs, Users only see assigned blogs
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="position: static; color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); margin-bottom: var(--space-3); display: block;">
+                            Assigned Blogs
+                        </label>
+                        <div id="blogCheckboxes" style="display: flex; flex-direction: column; gap: var(--space-3); background: var(--surface-elevated); border: 2px solid var(--border-default); border-radius: var(--radius-base); padding: var(--space-4); max-height: 240px; overflow-y: auto;">
+                            <!-- Blog checkboxes will be populated here -->
+                        </div>
+                        <small style="color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-2); display: block;">
+                            Select which blogs this user can access (not applicable to admins)
+                        </small>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" onclick="closeModal()" class="btn btn-secondary">
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span>Save User</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Success/Error Alert -->
+    <div id="alertContainer" style="position: fixed; top: var(--space-6); right: var(--space-6); z-index: var(--z-toast); max-width: 400px; display: none;"></div>
+
     <script>
         let users = [];
         let blogs = [];
         let editingUserId = null;
 
         async function checkAuth() {
-            const response = await fetch('/api/auth-status');
-            const data = await response.json();
+            try {
+                const response = await fetch('/api/auth-status');
+                const data = await response.json();
 
-            if (!data.authenticated || data.user.role !== 'super_admin') {
-                alert('Access denied. Super admin only.');
+                if (!data.authenticated || data.user.role !== 'super_admin') {
+                    alert('Access denied. Super admin only.');
+                    location.href = 'index.html';
+                    return;
+                }
+
+                loadUsers();
+                loadBlogs();
+            } catch (error) {
+                console.error('Auth check failed:', error);
                 location.href = 'index.html';
-                return;
             }
-
-            loadUsers();
-            loadBlogs();
         }
 
         async function loadUsers() {
-            const response = await fetch('/api/users');
-            users = await response.json();
+            const usersList = document.getElementById('usersList');
 
-            const list = document.getElementById('usersList');
-            list.innerHTML = '';
+            try {
+                const response = await fetch('/api/users');
+                users = await response.json();
 
-            users.forEach(user => {
-                const blogsText = user.assignedBlogs && user.assignedBlogs.length > 0 ? user.assignedBlogs.join(', ') : 'None';
-                const card = document.createElement('div');
-                card.className = 'admin-card';
-                const isSuperAdmin = user.role === 'super_admin';
+                usersList.innerHTML = '';
 
-                card.innerHTML = '<div class="admin-card-header"><h3>' + user.username + '</h3><span class="role-badge">' + user.role + '</span></div><div class="admin-card-body"><p><strong>Assigned Blogs:</strong> ' + blogsText + '</p><p class="admin-card-meta">Created: ' + new Date(user.createdAt).toLocaleDateString() + '</p></div><div class="admin-card-actions">' + (isSuperAdmin ? '<span class="text-muted">Super Admin (Cannot edit/delete)</span>' : '<button onclick="editUser(\'' + user.id + '\')" class="btn-secondary">✏️ Edit</button><button onclick="deleteUser(\'' + user.id + '\')" class="btn-danger">🗑️ Delete</button>') + '</div>';
+                if (users.length === 0) {
+                    usersList.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: var(--space-16) var(--space-8);">
+                            <svg width="120" height="120" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto var(--space-6); opacity: 0.3;">
+                                <path d="M60 70v-2a16 16 0 0 0-16-16H28a16 16 0 0 0-16 16v2"></path>
+                                <circle cx="36" cy="32" r="12"></circle>
+                                <path d="M108 70v-2a16 16 0 0 0-12-15.5"></path>
+                                <path d="M76 20a16 16 0 0 1 0 31"></path>
+                            </svg>
+                            <h3 style="color: var(--text-primary); margin-bottom: var(--space-3);">No Users Yet</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">
+                                Add your first user to get started.
+                            </p>
+                            <button onclick="showAddUserForm()" class="btn btn-primary">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                                </svg>
+                                <span>Add Your First User</span>
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
 
-                list.appendChild(card);
-            });
+                users.forEach(user => {
+                    const blogsText = user.assignedBlogs && user.assignedBlogs.length > 0
+                        ? user.assignedBlogs.join(', ')
+                        : 'None';
+                    const isSuperAdmin = user.role === 'super_admin';
+
+                    const card = document.createElement('article');
+                    card.className = 'card';
+                    card.style.cssText = 'display: flex; flex-direction: column; gap: var(--space-4); cursor: default;';
+                    card.setAttribute('aria-label', `User: ${user.username}`);
+
+                    // Role badge styling
+                    let roleBadgeStyle = '';
+                    let roleText = user.role;
+                    if (user.role === 'super_admin') {
+                        roleBadgeStyle = 'background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-600)); color: white;';
+                        roleText = 'Super Admin';
+                    } else if (user.role === 'admin') {
+                        roleBadgeStyle = 'background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); color: white;';
+                        roleText = 'Admin';
+                    } else {
+                        roleBadgeStyle = 'background: var(--surface-elevated); color: var(--text-secondary); border: 2px solid var(--border-default);';
+                        roleText = 'User';
+                    }
+
+                    card.innerHTML = `
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2);">
+                                    <h3 style="font-size: var(--text-xl); margin: 0; color: var(--text-primary);">${user.username}</h3>
+                                    <span style="${roleBadgeStyle} padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-wide); text-transform: uppercase;">
+                                        ${roleText}
+                                    </span>
+                                </div>
+                                <p style="font-size: var(--text-sm); color: var(--text-tertiary); margin: 0;">
+                                    Created ${new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                            </div>
+                            ${!isSuperAdmin ? `
+                                <div style="display: flex; gap: var(--space-2);">
+                                    <button
+                                        onclick="editUser('${user.id}')"
+                                        class="btn-icon"
+                                        aria-label="Edit user ${user.username}"
+                                        title="Edit">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onclick="deleteUser('${user.id}')"
+                                        class="btn-icon"
+                                        style="border-color: var(--color-error-500); color: var(--color-error-500);"
+                                        onmouseover="this.style.background='var(--color-error-500)'; this.style.color='white';"
+                                        onmouseout="this.style.background='var(--surface-card)'; this.style.color='var(--color-error-500)';"
+                                        aria-label="Delete user ${user.username}"
+                                        title="Delete">
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            ` : `
+                                <div style="padding: var(--space-2) var(--space-4); background: var(--surface-elevated); border-radius: var(--radius-base); font-size: var(--text-sm); color: var(--text-tertiary);">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: var(--space-1);">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                    Protected
+                                </div>
+                            `}
+                        </div>
+
+                        <div style="padding-top: var(--space-3); border-top: 1px solid var(--border-default);">
+                            <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin: 0 0 var(--space-2) 0; font-weight: var(--weight-medium); text-transform: uppercase; letter-spacing: var(--tracking-wide);">
+                                Assigned Blogs
+                            </p>
+                            <p style="font-size: var(--text-sm); color: var(--text-primary); margin: 0; line-height: var(--leading-relaxed);">
+                                ${user.role === 'admin' ? '<em>All blogs (Admin has full access)</em>' : (blogsText !== 'None' ? blogsText : '<em style="color: var(--text-tertiary);">No blogs assigned</em>')}
+                            </p>
+                        </div>
+                    `;
+
+                    usersList.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                usersList.innerHTML = `
+                    <div class="alert alert-error" style="grid-column: 1 / -1;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <div>
+                            <strong>Failed to load users</strong>
+                            <p style="margin: 0;">Please refresh the page or contact support.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function loadBlogs() {
-            const response = await fetch('/api/blogs');
-            blogs = await response.json();
+            try {
+                const response = await fetch('/api/blogs');
+                blogs = await response.json();
+            } catch (error) {
+                console.error('Failed to load blogs:', error);
+                blogs = [];
+            }
         }
 
         function showAddUserForm() {
             editingUserId = null;
             document.getElementById('modalTitle').textContent = 'Add User';
+            document.querySelector('#userModal .modal-header p').textContent = 'Create a new user account';
             document.getElementById('userForm').reset();
             renderBlogCheckboxes([]);
             document.getElementById('userModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('username').focus(), 100);
         }
 
-        function closeModal() {
+        function closeModal(event) {
+            if (event) {
+                event.preventDefault();
+            }
             document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userForm').reset();
+            editingUserId = null;
         }
 
         function renderBlogCheckboxes(assignedBlogs) {
             const container = document.getElementById('blogCheckboxes');
             container.innerHTML = '';
 
+            if (blogs.length === 0) {
+                container.innerHTML = `
+                    <p style="color: var(--text-tertiary); font-size: var(--text-sm); text-align: center; margin: var(--space-2) 0;">
+                        No blogs available. Add blogs first.
+                    </p>
+                `;
+                return;
+            }
+
             blogs.forEach(blog => {
                 const label = document.createElement('label');
                 label.className = 'checkbox-label';
+                label.style.cssText = 'padding: var(--space-2); border-radius: var(--radius-sm); transition: background var(--duration-fast) var(--ease-standard);';
+                label.onmouseover = function() { this.style.background = 'var(--surface-card)'; };
+                label.onmouseout = function() { this.style.background = 'transparent'; };
+
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.name = 'assignedBlogs';
                 checkbox.value = blog.id;
                 checkbox.checked = assignedBlogs.includes(blog.id);
+
+                const textSpan = document.createElement('span');
+                textSpan.textContent = blog.name;
+                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary);';
+
                 label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(' ' + blog.name));
+                label.appendChild(textSpan);
                 container.appendChild(label);
             });
         }
@@ -133,66 +406,142 @@
             const user = users.find(u => u.id === userId);
             if (!user) return;
 
-            editingUserId = userId;
-            document.getElementById('modalTitle').textContent = 'Edit User';
-            document.getElementById('username').value = user.username;
-            document.getElementById('password').value = user.password;
-            document.getElementById('role').value = user.role;
-            renderBlogCheckboxes(user.assignedBlogs || []);
-            document.getElementById('userModal').classList.remove('hidden');
-        }
-
-        async function deleteUser(userId) {
-            if (!confirm('Are you sure you want to delete this user?')) return;
-
-            const response = await fetch('/api/users/' + userId, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                loadUsers();
-            } else {
-                const error = await response.json();
-                alert(error.error || 'Failed to delete user');
+            try {
+                editingUserId = userId;
+                document.getElementById('modalTitle').textContent = 'Edit User';
+                document.querySelector('#userModal .modal-header p').textContent = 'Update user account details';
+                document.getElementById('username').value = user.username;
+                document.getElementById('password').value = user.password;
+                document.getElementById('role').value = user.role;
+                renderBlogCheckboxes(user.assignedBlogs || []);
+                document.getElementById('userModal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('username').focus(), 100);
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                showAlert('Failed to load user details', 'error');
             }
         }
 
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/' + userId, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showAlert('User deleted successfully', 'success');
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to delete user', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                showAlert('Failed to delete user', 'error');
+            }
+        }
+
+        // Form submit handler
         document.getElementById('userForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const checkboxes = document.querySelectorAll('input[name="assignedBlogs"]:checked');
-            const assignedBlogs = Array.from(checkboxes).map(cb => cb.value);
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div><span>Saving...</span>';
 
-            const userData = {
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value,
-                role: document.getElementById('role').value,
-                assignedBlogs: assignedBlogs
-            };
+            try {
+                const checkboxes = document.querySelectorAll('input[name="assignedBlogs"]:checked');
+                const assignedBlogs = Array.from(checkboxes).map(cb => cb.value);
 
-            const url = editingUserId ? '/api/users/' + editingUserId : '/api/users';
-            const method = editingUserId ? 'PUT' : 'POST';
+                const userData = {
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                    role: document.getElementById('role').value,
+                    assignedBlogs: assignedBlogs
+                };
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            });
+                const url = editingUserId ? '/api/users/' + editingUserId : '/api/users';
+                const method = editingUserId ? 'PUT' : 'POST';
 
-            if (response.ok) {
-                closeModal();
-                loadUsers();
-            } else {
-                const error = await response.json();
-                alert(error.error || 'Failed to save user');
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    showAlert(editingUserId ? 'User updated successfully' : 'User added successfully', 'success');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to save user', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to save user:', error);
+                showAlert('Failed to save user', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Save User</span>';
             }
         });
 
         async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                location.href = 'index.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                location.href = 'index.html';
+            }
         }
 
+        // Alert helper function
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = 'animation: slideUp 0.3s ease-out;';
+
+            const icon = type === 'success'
+                ? '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+                : '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+            alertDiv.innerHTML = `
+                ${icon}
+                <div>
+                    <strong>${message}</strong>
+                </div>
+            `;
+
+            alertContainer.appendChild(alertDiv);
+            alertContainer.style.display = 'block';
+
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateX(100%)';
+                alertDiv.style.transition = 'all 0.3s ease-in';
+                setTimeout(() => {
+                    alertDiv.remove();
+                    if (alertContainer.children.length === 0) {
+                        alertContainer.style.display = 'none';
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.getElementById('userModal').classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // Initialize on page load
         checkAuth();
     </script>
 </body>

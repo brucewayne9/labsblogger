@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import bcrypt from 'bcrypt';
 import { generateArticle } from './src/articleWriter.js';
 import { generateOutline } from './src/outlineGenerator.js';
 import { selectImages, getFeaturedImageCandidates } from './src/imageSelector.js';
@@ -132,27 +133,34 @@ function saveBlogs(data) {
 // Routes
 
 // Login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   const users = loadUsers();
-  const user = users.users.find(u => u.username === username && u.password === password);
+  const user = users.users.find(u => u.username === username);
 
   if (user) {
-    // Don't store password in session
-    req.session.user = {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      assignedBlogs: user.assignedBlogs || []
-    };
-    res.json({
-      success: true,
-      user: {
+    // Compare password with bcrypt hash
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (passwordMatch) {
+      // Don't store password in session
+      req.session.user = {
+        id: user.id,
         username: user.username,
-        role: user.role
-      }
-    });
+        role: user.role,
+        assignedBlogs: user.assignedBlogs || []
+      };
+      res.json({
+        success: true,
+        user: {
+          username: user.username,
+          role: user.role
+        }
+      });
+    } else {
+      res.status(401).json({ error: 'Invalid username or password' });
+    }
   } else {
     res.status(401).json({ error: 'Invalid username or password' });
   }
@@ -536,21 +544,25 @@ app.get('/api/users', requireSuperAdmin, (req, res) => {
 });
 
 // Add new user
-app.post('/api/users', requireSuperAdmin, (req, res) => {
+app.post('/api/users', requireSuperAdmin, async (req, res) => {
   const users = loadUsers();
+
+  // Check if username already exists
+  if (users.users.find(u => u.username === req.body.username)) {
+    return res.status(400).json({ error: 'Username already exists' });
+  }
+
+  // Hash password before storing
+  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
   const newUser = {
     id: `user_${Date.now()}`,
     username: req.body.username,
-    password: req.body.password,
+    password: hashedPassword,
     role: req.body.role || 'user',
     assignedBlogs: req.body.assignedBlogs || [],
     createdAt: new Date().toISOString()
   };
-
-  // Check if username already exists
-  if (users.users.find(u => u.username === newUser.username)) {
-    return res.status(400).json({ error: 'Username already exists' });
-  }
 
   users.users.push(newUser);
   saveUsers(users);
@@ -567,7 +579,7 @@ app.post('/api/users', requireSuperAdmin, (req, res) => {
 });
 
 // Update user
-app.put('/api/users/:id', requireSuperAdmin, (req, res) => {
+app.put('/api/users/:id', requireSuperAdmin, async (req, res) => {
   const users = loadUsers();
   const index = users.users.findIndex(u => u.id === req.params.id);
 
@@ -580,10 +592,16 @@ app.put('/api/users/:id', requireSuperAdmin, (req, res) => {
     return res.status(403).json({ error: 'Cannot demote super admin' });
   }
 
+  // Hash password if it's being changed
+  let password = users.users[index].password;
+  if (req.body.password) {
+    password = await bcrypt.hash(req.body.password, 10);
+  }
+
   users.users[index] = {
     ...users.users[index],
     username: req.body.username || users.users[index].username,
-    password: req.body.password || users.users[index].password,
+    password: password,
     role: req.body.role || users.users[index].role,
     assignedBlogs: req.body.assignedBlogs !== undefined ? req.body.assignedBlogs : users.users[index].assignedBlogs
   };

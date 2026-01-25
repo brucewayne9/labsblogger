@@ -1,91 +1,333 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-desktop="classic">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Publish your blog post to WordPress">
     <title>Publish - The Blogger</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-improvements.css">
+    <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="desktops.css">
+    <link rel="stylesheet" href="desktop-switcher.css">
+    <link rel="stylesheet" href="logo-effects.css">
+    <script src="desktop-switcher.js"></script>
+    <style>
+        .publish-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+            margin: var(--space-8) 0 var(--space-10);
+        }
+
+        .publish-option {
+            position: relative;
+            background: var(--surface-card);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            transition: all var(--duration-base) var(--ease-standard);
+            cursor: pointer;
+        }
+
+        .publish-option:hover {
+            border-color: var(--brand);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-base);
+        }
+
+        .publish-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .publish-option input[type="radio"]:checked ~ label {
+            border-color: var(--brand);
+        }
+
+        .publish-option input[type="radio"]:checked ~ label::before {
+            background: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .publish-option input[type="radio"]:checked ~ label::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .publish-option label {
+            display: flex;
+            gap: var(--space-5);
+            cursor: pointer;
+            user-select: none;
+            align-items: flex-start;
+        }
+
+        .publish-option label::before {
+            content: '';
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--border-default);
+            border-radius: 50%;
+            background: var(--surface-elevated);
+            transition: all var(--duration-fast) var(--ease-standard);
+            margin-top: 2px;
+        }
+
+        .publish-option label::after {
+            content: '';
+            position: absolute;
+            left: calc(var(--space-8) + 8px);
+            top: calc(var(--space-8) + 8px);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0);
+            transition: all var(--duration-fast) var(--ease-spring);
+        }
+
+        .publish-option:has(input[type="radio"]:checked) {
+            border-color: var(--brand);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
+            box-shadow: var(--shadow-primary-sm);
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-title {
+            display: block;
+            font-size: var(--text-xl);
+            font-weight: var(--weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-3);
+        }
+
+        .option-description {
+            display: block;
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+            line-height: var(--leading-relaxed);
+        }
+
+        .schedule-datetime {
+            margin-top: 0;
+            margin-bottom: var(--space-8);
+            padding: var(--space-8);
+            background: var(--surface-elevated);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-lg);
+        }
+
+        .schedule-datetime label {
+            display: block;
+            font-size: var(--text-base);
+            font-weight: var(--weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+        }
+
+        .schedule-datetime input[type="datetime-local"] {
+            width: 100%;
+            padding: var(--space-5);
+            background: var(--surface-card);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-base);
+            color: var(--text-primary);
+            font-size: var(--text-lg);
+            font-family: inherit;
+            transition: all var(--duration-base) var(--ease-standard);
+        }
+
+        .schedule-datetime input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: var(--focus-ring);
+        }
+
+        .schedule-datetime small {
+            display: block;
+            margin-top: var(--space-3);
+            font-size: var(--text-sm);
+            color: var(--text-tertiary);
+            line-height: var(--leading-relaxed);
+        }
+
+        .button-group {
+            margin-top: var(--space-10);
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <img src="logo.png" alt="The Blogger" class="navbar-logo">
-            <h1>Create Blog Post</h1>
-        </div>
-        <div class="nav-buttons">
-            <button onclick="location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
-            <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <div class="navbar-logo-wrapper">
+                    <img src="logo.svg" alt="The Blogger" class="logo-svg">
+                </div>
+                <h1 style="font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0;">Create Blog Post</h1>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="location.href='index.html'" class="btn btn-ghost btn-sm" aria-label="Back to dashboard">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button onclick="logout()" class="btn btn-secondary btn-sm" aria-label="Logout">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="progress-bar">
-            <div class="progress-step" data-step="1">1</div>
-            <div class="progress-step" data-step="2">2</div>
-            <div class="progress-step" data-step="3">3</div>
-            <div class="progress-step" data-step="4">4</div>
+    <!-- Main Content -->
+    <main class="container" style="padding-top: var(--space-10); padding-bottom: var(--space-16); max-width: 800px;">
+        <!-- Progress Bar -->
+        <div class="progress-bar" role="progressbar" aria-valuenow="5" aria-valuemin="1" aria-valuemax="5" aria-label="Step 5 of 5" style="margin-bottom: var(--space-12);">
+            <div class="progress-step completed" data-step="1">1</div>
+            <div class="progress-step completed" data-step="2">2</div>
+            <div class="progress-step completed" data-step="3">3</div>
+            <div class="progress-step completed" data-step="4">4</div>
             <div class="progress-step active" data-step="5">5</div>
         </div>
 
         <div id="publishOptions">
-            <h2>Publish to WordPress</h2>
-            <p class="step-subtitle">Choose how you want to publish your article</p>
+            <!-- Page Header -->
+            <header style="text-align: center; margin-bottom: var(--space-12);">
+                <h2 style="margin-bottom: var(--space-4);">Publish to WordPress</h2>
+                <p style="font-size: var(--text-xl); color: var(--text-secondary); margin-top: var(--space-3); line-height: var(--leading-relaxed);">
+                    Choose how you want to publish your article
+                </p>
+            </header>
 
             <div class="publish-options">
+                <!-- Draft Option -->
                 <div class="publish-option">
                     <input type="radio" id="publishDraft" name="publishType" value="draft" checked>
                     <label for="publishDraft">
-                        <span class="option-title">Save as Draft</span>
-                        <span class="option-description">Review and edit in WordPress before publishing</span>
+                        <div class="option-content">
+                            <span class="option-title">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: var(--space-3); color: var(--brand);" aria-hidden="true">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                Save as Draft
+                            </span>
+                            <span class="option-description">Review and edit in WordPress before publishing</span>
+                        </div>
                     </label>
                 </div>
 
+                <!-- Publish Now Option -->
                 <div class="publish-option">
                     <input type="radio" id="publishNow" name="publishType" value="publish">
                     <label for="publishNow">
-                        <span class="option-title">Publish Immediately</span>
-                        <span class="option-description">Article will be live on your blog right away</span>
+                        <div class="option-content">
+                            <span class="option-title">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: var(--space-3); color: var(--color-success-500);" aria-hidden="true">
+                                    <polyline points="9 11 12 14 22 4"></polyline>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Publish Immediately
+                            </span>
+                            <span class="option-description">Article will be live on your blog right away</span>
+                        </div>
                     </label>
                 </div>
 
+                <!-- Schedule Option -->
                 <div class="publish-option">
                     <input type="radio" id="publishSchedule" name="publishType" value="future">
                     <label for="publishSchedule">
-                        <span class="option-title">Schedule for Later</span>
-                        <span class="option-description">Choose a specific date and time to publish</span>
+                        <div class="option-content">
+                            <span class="option-title">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: var(--space-3); color: var(--color-info-500);" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                Schedule for Later
+                            </span>
+                            <span class="option-description">Choose a specific date and time to publish</span>
+                        </div>
                     </label>
                 </div>
+            </div>
 
-                <div id="scheduleDateTime" class="schedule-datetime hidden">
-                    <label for="scheduleDate">Date & Time:</label>
-                    <input type="datetime-local" id="scheduleDate">
-                    <small>Timezone: Your WordPress site's timezone</small>
-                </div>
+            <!-- Schedule Date/Time Picker -->
+            <div id="scheduleDateTime" class="schedule-datetime hidden">
+                <label for="scheduleDate">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: var(--space-2); color: var(--brand);" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Select Date & Time
+                </label>
+                <input type="datetime-local" id="scheduleDate">
+                <small>Timezone: Your WordPress site's timezone</small>
             </div>
 
             <div class="button-group">
-                <button onclick="location.href='create-images.html'" class="btn-secondary">← Back</button>
-                <button onclick="executePublish()" class="btn-primary" id="publishBtn">Complete Publishing →</button>
+                <button onclick="location.href='create-images.html'" class="btn btn-secondary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button onclick="executePublish()" class="btn btn-primary" id="publishBtn">
+                    <span>Complete Publishing</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
 
+        <!-- Publish Result -->
         <div id="publishResult" class="hidden">
-            <div class="loader">Processing...</div>
+            <div class="loader" role="status" aria-live="polite">
+                <div class="spinner"></div>
+                <span>Processing...</span>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script>
         let blogId = sessionStorage.getItem('selectedBlogId');
         let article = JSON.parse(sessionStorage.getItem('article') || '{}');
         let images = JSON.parse(sessionStorage.getItem('images') || '{}');
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            location.href = 'index.html';
-        }
+        async function init() {
+            // Check authentication
+            try {
+                const authResponse = await fetch('/api/auth-status');
+                const authData = await authResponse.json();
 
-        function init() {
+                if (!authData.authenticated) {
+                    location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                location.href = 'index.html';
+                return;
+            }
+
+            // Check if required data exists
             if (!blogId || !article.title || !images) {
                 location.href = 'create-brainstorm.html';
                 return;
@@ -111,6 +353,16 @@
                     }
                 });
             });
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout failed:', error);
+            } finally {
+                location.href = 'index.html';
+            }
         }
 
         async function executePublish() {
@@ -141,7 +393,12 @@
             const loadingText = publishType === 'publish' ? 'Publishing article...' :
                               publishType === 'future' ? 'Scheduling article...' :
                               'Creating draft...';
-            document.getElementById('publishResult').innerHTML = `<div class="loader">${loadingText}</div>`;
+            document.getElementById('publishResult').innerHTML = `
+                <div class="loader" role="status" aria-live="polite">
+                    <div class="spinner"></div>
+                    <span>${loadingText}</span>
+                </div>
+            `;
 
             try {
                 const response = await fetch('/api/publish', {
@@ -160,36 +417,93 @@
 
                 if (data.success) {
                     let message = '';
+                    let iconSVG = '';
 
                     if (data.status === 'publish') {
+                        iconSVG = `
+                            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--color-success-500);" aria-hidden="true">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        `;
                         message = `
-                            <h3>✅ Article Published Successfully!</h3>
-                            <p>Your article is now live on your blog.</p>
-                            <p><strong>Post ID:</strong> ${data.postId}</p>
-                            <p><a href="${data.publishUrl}" target="_blank" class="btn-primary">View Published Article →</a></p>
-                            <p><a href="${data.editUrl}" target="_blank">Edit in WordPress</a></p>
+                            <h3 style="color: var(--color-success-500);">Article Published Successfully!</h3>
+                            <p style="margin-top: var(--space-4);">Your article is now live on your blog.</p>
+                            <p style="font-size: var(--text-sm); color: var(--text-tertiary); margin-top: var(--space-2);">Post ID: ${data.postId}</p>
+                            <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-6);">
+                                <a href="${data.publishUrl}" target="_blank" class="btn btn-primary">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                    <span>View Published Article</span>
+                                </a>
+                                <a href="${data.editUrl}" target="_blank" class="btn btn-secondary">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Edit in WordPress</span>
+                                </a>
+                            </div>
                         `;
                     } else if (data.status === 'future') {
+                        iconSVG = `
+                            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--color-info-500);" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        `;
                         message = `
-                            <h3>✅ Article Scheduled Successfully!</h3>
-                            <p>Your article will be published automatically.</p>
-                            <p><strong>Scheduled for:</strong> ${new Date(data.scheduledDate).toLocaleString()}</p>
-                            <p><strong>Post ID:</strong> ${data.postId}</p>
-                            <p><a href="${data.editUrl}" target="_blank" class="btn-primary">Edit in WordPress →</a></p>
+                            <h3 style="color: var(--color-info-500);">Article Scheduled Successfully!</h3>
+                            <p style="margin-top: var(--space-4);">Your article will be published automatically.</p>
+                            <p style="font-size: var(--text-base); color: var(--text-primary); margin-top: var(--space-3); font-weight: var(--weight-semibold);">Scheduled for: ${new Date(data.scheduledDate).toLocaleString()}</p>
+                            <p style="font-size: var(--text-sm); color: var(--text-tertiary); margin-top: var(--space-2);">Post ID: ${data.postId}</p>
+                            <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-6);">
+                                <a href="${data.editUrl}" target="_blank" class="btn btn-primary">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Edit in WordPress</span>
+                                </a>
+                            </div>
                         `;
                     } else {
+                        iconSVG = `
+                            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--brand);" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                        `;
                         message = `
-                            <h3>✅ Draft Created Successfully!</h3>
-                            <p>Your article is saved as a draft.</p>
-                            <p><strong>Post ID:</strong> ${data.postId}</p>
-                            <p><a href="${data.editUrl}" target="_blank" class="btn-primary">Edit in WordPress →</a></p>
+                            <h3 style="color: var(--brand);">Draft Created Successfully!</h3>
+                            <p style="margin-top: var(--space-4);">Your article is saved as a draft.</p>
+                            <p style="font-size: var(--text-sm); color: var(--text-tertiary); margin-top: var(--space-2);">Post ID: ${data.postId}</p>
+                            <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-6);">
+                                <a href="${data.editUrl}" target="_blank" class="btn btn-primary">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Edit in WordPress</span>
+                                </a>
+                            </div>
                         `;
                     }
 
                     document.getElementById('publishResult').innerHTML = `
                         <div class="success-box">
+                            ${iconSVG}
                             ${message}
-                            <button onclick="createAnother()" class="btn-secondary">Create Another Post</button>
+                            <button onclick="createAnother()" class="btn btn-secondary" style="margin-top: var(--space-6);">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Create Another Post</span>
+                            </button>
                         </div>
                     `;
 
@@ -204,12 +518,31 @@
                 }
 
             } catch (error) {
+                console.error('Publishing error:', error);
                 document.getElementById('publishResult').innerHTML = `
-                    <div class="error-box">
-                        <h3>❌ Publishing Failed</h3>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" class="btn-primary">Try Again</button>
-                        <button onclick="location.href='create-images.html'" class="btn-secondary">← Go Back</button>
+                    <div class="error-box" role="alert">
+                        <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-4); color: var(--color-error-500);" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Publishing Failed</h3>
+                        <p style="margin-top: var(--space-3);">${error.message}</p>
+                        <div style="display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-6);">
+                            <button onclick="location.reload()" class="btn btn-primary">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                                </svg>
+                                <span>Try Again</span>
+                            </button>
+                            <button onclick="location.href='create-images.html'" class="btn btn-secondary">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                                <span>Go Back</span>
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -219,6 +552,7 @@
             location.href = 'index.html';
         }
 
+        // Initialize page
         init();
     </script>
 </body>
