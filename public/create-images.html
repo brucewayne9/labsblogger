@@ -55,44 +55,120 @@
         }
 
         .api-source-toggle {
-            display: flex;
+            display: flex !important;
             justify-content: center;
-            gap: var(--space-4);
-            margin: var(--space-6) auto;
-            padding: var(--space-4);
-            background: var(--surface-card);
+            align-items: center;
+            gap: var(--space-3);
+            margin: var(--space-8) auto var(--space-6);
+            padding: var(--space-4) var(--space-6);
+            background: var(--surface-elevated);
             border: 2px solid var(--border-default);
-            border-radius: var(--radius-base);
-            max-width: 400px;
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            visibility: visible !important;
+        }
+
+        .api-source-toggle::before {
+            content: '🖼️ Image Source:';
+            font-size: var(--text-base);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .api-source-label {
-            display: flex;
+            display: inline-flex !important;
             align-items: center;
+            justify-content: center;
             gap: var(--space-2);
             cursor: pointer;
-            padding: var(--space-2) var(--space-4);
+            padding: var(--space-3) var(--space-5);
             border-radius: var(--radius-base);
             transition: all var(--duration-fast) var(--ease-standard);
+            border: 2px solid var(--border-default);
+            background: var(--surface-card);
+            min-width: 140px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
         }
 
         .api-source-label:hover {
             background: var(--surface-elevated);
+            border-color: var(--brand);
+            transform: translateY(-2px);
         }
 
         .api-source-label input[type="radio"] {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--brand);
+            flex-shrink: 0;
+            pointer-events: auto;
+            position: relative;
+            z-index: 100;
         }
 
         .api-source-label span {
             font-size: var(--text-base);
-            font-weight: var(--weight-medium);
+            font-weight: var(--weight-semibold);
             color: var(--text-secondary);
+            flex-shrink: 0;
+            pointer-events: none;
+            user-select: none;
         }
 
-        .api-source-label input[type="radio"]:checked + span {
+        .api-source-label input[type="radio"]:checked ~ span {
             color: var(--text-primary);
+        }
+
+        .api-source-label:has(input[type="radio"]:checked) {
+            background: var(--surface-elevated);
+            border-color: var(--brand);
+            box-shadow: var(--shadow-primary-sm);
+        }
+
+        .api-source-label:has(input[type="radio"]:checked) span {
+            color: var(--brand);
+        }
+
+        /* Toast notification for API switching */
+        .api-toast {
+            position: fixed;
+            bottom: var(--space-6);
+            right: var(--space-6);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-4) var(--space-6);
+            background: var(--surface-card);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            color: var(--text-primary);
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--duration-base) var(--ease-spring);
+            z-index: var(--z-toast);
+            backdrop-filter: blur(20px);
+        }
+
+        .api-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .api-toast svg {
+            color: var(--brand);
+            flex-shrink: 0;
         }
 
         .file-upload input[type="file"] {
@@ -238,15 +314,20 @@
 
         <!-- API Source Toggle (for AI images) -->
         <div id="apiSourceToggle" class="api-source-toggle">
-            <label class="api-source-label">
-                <input type="radio" name="imageApi" value="unsplash" checked onchange="switchImageAPI()">
-                <span>Unsplash</span>
+            <label for="unsplashRadio" class="api-source-label" title="Free high-quality stock photos from Unsplash">
+                <input type="radio" id="unsplashRadio" name="imageApi" value="unsplash" checked onchange="switchImageAPI(event)">
+                <span>📷 Unsplash</span>
             </label>
-            <label class="api-source-label">
-                <input type="radio" name="imageApi" value="pexels" onchange="switchImageAPI()">
-                <span>Pexels</span>
+            <div style="width: 2px; height: 30px; background: var(--border-default); border-radius: 2px;"></div>
+            <label for="pexelsRadio" class="api-source-label" title="Free stock photos from Pexels">
+                <input type="radio" id="pexelsRadio" name="imageApi" value="pexels" onchange="switchImageAPI(event)">
+                <span>🌄 Pexels</span>
             </label>
         </div>
+
+        <p style="text-align: center; font-size: var(--text-sm); color: var(--text-secondary); margin-top: calc(var(--space-2) * -1); margin-bottom: var(--space-8); font-weight: var(--weight-medium);">
+            Click to switch between Unsplash and Pexels image sources ⬆️
+        </p>
 
         <!-- AI Images Section -->
         <div id="aiImagesSection">
@@ -389,6 +470,9 @@
                 return;
             }
 
+            // Show AI images section by default and make toggle visible
+            showAIImages();
+
             await loadFeaturedCandidates();
         }
 
@@ -402,12 +486,41 @@
             }
         }
 
-        function switchImageAPI() {
+        function switchImageAPI(event) {
             const selectedAPI = document.querySelector('input[name="imageApi"]:checked').value;
             currentImageAPI = selectedAPI;
-            console.log('Switched to:', currentImageAPI);
+            console.log('switchImageAPI called');
+            console.log('Selected API:', selectedAPI);
+            console.log('Current API:', currentImageAPI);
+            console.log('Event target:', event ? event.target : 'no event');
+
+            // Show toast notification
+            const apiName = selectedAPI.charAt(0).toUpperCase() + selectedAPI.slice(1);
+            showToast(`Switched to ${apiName} images`, 'info');
+
             // Reload candidates with new API
             loadFeaturedCandidates();
+        }
+
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.api-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'api-toast';
+            toast.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM10 15L5 10L6.41 8.59L10 12.17L17.59 4.58L19 6L10 15Z" fill="currentColor"/>
+                </svg>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
         }
 
         async function loadFeaturedCandidates() {
@@ -514,7 +627,11 @@
             document.getElementById('uploadImagesBtn').classList.remove('active');
             document.getElementById('aiImagesBtn').setAttribute('aria-pressed', 'true');
             document.getElementById('uploadImagesBtn').setAttribute('aria-pressed', 'false');
-            document.getElementById('apiSourceToggle').style.display = 'flex';
+            const toggle = document.getElementById('apiSourceToggle');
+            toggle.style.display = 'flex';
+            toggle.style.visibility = 'visible';
+            toggle.style.opacity = '1';
+            console.log('API Source Toggle should now be visible:', toggle);
         }
 
         function showUploadImages() {
