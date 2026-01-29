@@ -291,9 +291,11 @@
                     card.className = 'blog-card';
                     card.setAttribute('aria-label', `Blog: ${blog.name}`);
 
+                    const maxVisibleTags = 4;
                     const categoriesHTML = blog.categories && blog.categories.length > 0
                         ? `<div class="blog-categories" aria-label="Categories">
-                            ${blog.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                            ${blog.categories.slice(0, maxVisibleTags).map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                            ${blog.categories.length > maxVisibleTags ? `<span class="category-tag category-tag-more">+${blog.categories.length - maxVisibleTags} more</span>` : ''}
                            </div>`
                         : '';
 
