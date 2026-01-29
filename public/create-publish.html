@@ -20,6 +20,8 @@
 
         .publish-option {
             position: relative;
+            display: block;
+            width: 100%;
             background: var(--surface-card);
             border: 2px solid var(--border-default);
             border-radius: var(--radius-lg);
@@ -36,8 +38,9 @@
         .publish-option input[type="radio"] {
             position: absolute;
             opacity: 0;
-            width: 0;
-            height: 0;
+            width: 1px;
+            height: 1px;
+            pointer-events: none;
         }
 
         .publish-option input[type="radio"]:checked ~ label {
@@ -55,6 +58,7 @@
         }
 
         .publish-option label {
+            position: static !important;
             display: flex;
             gap: var(--space-5);
             cursor: pointer;
@@ -81,8 +85,8 @@
         .publish-option label::after {
             content: '';
             position: absolute;
-            left: 16px;
-            top: 16px;
+            left: calc(var(--space-8) + 8px);
+            top: calc(var(--space-8) + 10px);
             width: 12px;
             height: 12px;
             background: white;
@@ -101,6 +105,9 @@
 
         .option-content {
             flex: 1;
+        }
+
+        .option-content * {
             pointer-events: none;
         }
 
@@ -355,6 +362,18 @@
                         schedulePicker.classList.remove('hidden');
                     } else {
                         schedulePicker.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Make entire publish-option cards clickable
+            document.querySelectorAll('.publish-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio && e.target.tagName !== 'INPUT') {
+                        radio.checked = true;
+                        // Trigger change event
+                        radio.dispatchEvent(new Event('change'));
                     }
                 });
             });
