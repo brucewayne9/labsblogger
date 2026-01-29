@@ -391,10 +391,11 @@
                 checkbox.name = 'assignedBlogs';
                 checkbox.value = blog.id;
                 checkbox.checked = assignedBlogs.includes(blog.id);
+                checkbox.style.cssText = 'cursor: pointer; width: 20px; height: 20px; flex-shrink: 0;';
 
                 const textSpan = document.createElement('span');
                 textSpan.textContent = blog.name;
-                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary);';
+                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary); pointer-events: none;';
 
                 label.appendChild(checkbox);
                 label.appendChild(textSpan);
