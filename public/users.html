@@ -382,12 +382,23 @@
             blogs.forEach(blog => {
                 const checkboxId = 'blog-' + blog.id;
 
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'padding: var(--space-2); border-radius: var(--radius-sm); transition: background var(--duration-fast) var(--ease-standard); cursor: pointer;';
+                wrapper.onmouseover = function() { this.style.background = 'var(--surface-card)'; };
+                wrapper.onmouseout = function() { this.style.background = 'transparent'; };
+                wrapper.onclick = function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = this.querySelector('input[type="checkbox"]');
+                        if (cb) {
+                            cb.checked = !cb.checked;
+                        }
+                    }
+                };
+
                 const label = document.createElement('label');
                 label.className = 'checkbox-label';
                 label.htmlFor = checkboxId;
-                label.style.cssText = 'padding: var(--space-2); border-radius: var(--radius-sm); transition: background var(--duration-fast) var(--ease-standard); cursor: pointer;';
-                label.onmouseover = function() { this.style.background = 'var(--surface-card)'; };
-                label.onmouseout = function() { this.style.background = 'transparent'; };
+                label.style.cssText = 'display: flex; align-items: center; gap: var(--space-2); cursor: pointer; margin: 0;';
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -395,15 +406,16 @@
                 checkbox.name = 'assignedBlogs';
                 checkbox.value = blog.id;
                 checkbox.checked = assignedBlogs.includes(blog.id);
-                checkbox.style.cssText = 'cursor: pointer; width: 20px; height: 20px; flex-shrink: 0;';
+                checkbox.style.cssText = 'cursor: pointer; width: 20px; height: 20px; flex-shrink: 0; margin: 0;';
 
                 const textSpan = document.createElement('span');
                 textSpan.textContent = blog.name;
-                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary);';
+                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary); user-select: none;';
 
                 label.appendChild(checkbox);
                 label.appendChild(textSpan);
-                container.appendChild(label);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
             });
         }
 
