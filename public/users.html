@@ -380,14 +380,18 @@
             }
 
             blogs.forEach(blog => {
+                const checkboxId = 'blog-' + blog.id;
+
                 const label = document.createElement('label');
                 label.className = 'checkbox-label';
-                label.style.cssText = 'padding: var(--space-2); border-radius: var(--radius-sm); transition: background var(--duration-fast) var(--ease-standard);';
+                label.htmlFor = checkboxId;
+                label.style.cssText = 'padding: var(--space-2); border-radius: var(--radius-sm); transition: background var(--duration-fast) var(--ease-standard); cursor: pointer;';
                 label.onmouseover = function() { this.style.background = 'var(--surface-card)'; };
                 label.onmouseout = function() { this.style.background = 'transparent'; };
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
+                checkbox.id = checkboxId;
                 checkbox.name = 'assignedBlogs';
                 checkbox.value = blog.id;
                 checkbox.checked = assignedBlogs.includes(blog.id);
@@ -395,7 +399,7 @@
 
                 const textSpan = document.createElement('span');
                 textSpan.textContent = blog.name;
-                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary); pointer-events: none;';
+                textSpan.style.cssText = 'font-size: var(--text-sm); color: var(--text-primary);';
 
                 label.appendChild(checkbox);
                 label.appendChild(textSpan);
